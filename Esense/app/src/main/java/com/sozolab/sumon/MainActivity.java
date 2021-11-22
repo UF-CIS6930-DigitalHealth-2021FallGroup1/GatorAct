@@ -43,7 +43,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private String TAG = "Esense";
     private String deviceName = "eSense-1625";  // "eSense-0598"
     private String activityName = "Activity";
-    private int timeout = 30000;
+    private int timeout = 90000;
 
     private Button connectButton;
     private Button headShakeButton;
@@ -70,6 +70,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     Activity activityObj;
     Intent audioRecordServiceIntent;
     DatabaseHandler databaseHandler;
+    ApiHandler apiHandler;
     SensorListenerManager sensorListenerManager;
     ConnectionListenerManager connectionListenerManager;
     private static final int PERMISSION_REQUEST_CODE = 200;
@@ -114,6 +115,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         chronometer = (Chronometer) findViewById(R.id.chronometer);
 
+        // get data from api
+        apiHandler = new ApiHandler("http://localhost", "8000");
+
+        // get data from database
         databaseHandler = new DatabaseHandler(this);
         activityListView = (ListView) findViewById(R.id.activityListView);
         ArrayList<Activity> activityHistory = databaseHandler.getAllActivities();
@@ -213,6 +218,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
 
             case R.id.stayButton:
+                System.out.println("Click stay!");
+                apiHandler.getAction("/c1/competitive-drivers");
                 activityName = "Staying";
                 sharedPrefEditor.putString("activityName", activityName);
                 sharedPrefEditor.commit();

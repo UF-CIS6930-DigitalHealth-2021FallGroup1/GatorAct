@@ -62,9 +62,8 @@ public class SensorListenerManager implements ESenseSensorListener {
     @Override
     public void onSensorChanged(ESenseEvent evt) {
         //Log.d(TAG, "onSensorChanged()");
-
+        Log.d(TAG, "getEsenseData !!!!!!" );
         if (dataCollecting){
-
             if(excelSheet != null){
                 rowIndex++;
 
@@ -103,7 +102,7 @@ public class SensorListenerManager implements ESenseSensorListener {
 
                 String sensorData = "Index : " + activityIndex + " Activity : " + activityName + " Row : " + rowIndex + " Time : " + timeStamp
                         + " accel : " + accel[0] + " " + accel[1] + " " + accel[2] + " gyro : " + gyro[0] + " " + gyro[1] + " " + gyro[2];
-                Log.d(TAG, sensorData);
+                Log.d(TAG, "getEsenseData:" + sensorData);
             }
         }
     }
