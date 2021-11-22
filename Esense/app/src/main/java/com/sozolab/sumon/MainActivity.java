@@ -199,7 +199,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 sharedPrefEditor.putString("activityName", activityName);
                 sharedPrefEditor.commit();
                 setActivityName();
-                fireStoreHandler.test();
                 break;
 
             case R.id.eatingButton:
