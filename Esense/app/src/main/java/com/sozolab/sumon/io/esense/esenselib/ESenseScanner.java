@@ -74,6 +74,9 @@ public class ESenseScanner extends ScanCallback {
 //        }
         Log.d(TAG, "_device_mac: " + _device.getAddress() + ", name:" + _device.getName() + ", device bond state:" + _device.getBondState());
         String matchEsenseDeviceName = "";
+        // use direct esense mac address if the name is unable to reach
+        // String matchEsenseMacAddress = "00:04:79:00:0C:8D";
+
         if(_device != null) {
             matchEsenseDeviceName = _device.getName();
         }
