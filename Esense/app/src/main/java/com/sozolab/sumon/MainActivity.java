@@ -69,6 +69,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     Activity activityObj;
     Intent audioRecordServiceIntent;
     DatabaseHandler databaseHandler;
+    FireStoreHandler fireStoreHandler;
     SensorListenerManager sensorListenerManager;
     ConnectionListenerManager connectionListenerManager;
     private static final int PERMISSION_REQUEST_CODE = 200;
@@ -112,6 +113,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         activityTextView = (TextView) findViewById(R.id.activityTV);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         chronometer = (Chronometer) findViewById(R.id.chronometer);
+
+        // create firestore instance
+        fireStoreHandler = new FireStoreHandler();
 
         databaseHandler = new DatabaseHandler(this);
         activityListView = (ListView) findViewById(R.id.activityListView);
@@ -195,6 +199,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 sharedPrefEditor.putString("activityName", activityName);
                 sharedPrefEditor.commit();
                 setActivityName();
+                fireStoreHandler.test();
                 break;
 
             case R.id.eatingButton:
