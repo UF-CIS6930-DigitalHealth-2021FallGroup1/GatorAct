@@ -64,6 +64,7 @@ public class ConnectionListenerManager implements ESenseConnectionListener {
                 progressBar.setVisibility(View.GONE);
                 connectionTextView.setText("Disconnected");
                 deviceNameTextView.setText(manager.getmDeviceName());
+                Log.d(TAG, manager.getmDeviceName());
                 statusImageView.setImageResource(R.drawable.disconnected);
                 Toast.makeText(context, "Device not Found !", Toast.LENGTH_SHORT).show();
             }

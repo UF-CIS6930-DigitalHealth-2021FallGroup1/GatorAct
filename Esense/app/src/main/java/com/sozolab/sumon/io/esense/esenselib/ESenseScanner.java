@@ -45,11 +45,38 @@ public class ESenseScanner extends ScanCallback {
     public void onScanResult(int callbackType, ScanResult result) {
         super.onScanResult(callbackType, result);
         BluetoothDevice _device = result.getDevice();
-        if (_device != null && _device.getName() != null && _device.getName().matches(mDeviceName)) {
+//        if(_device != null){
+//            Log.d(TAG, "device found");
+//            String name = result.getScanRecord().getDeviceName();
+////            String name = _device.getName();
+//            String record = result.toString();
+//            Log.d(TAG, "record: " + record);
+//            if(name != null){
+//                Log.d(TAG, "name found");
+//            }
+//            if(name == null){
+//                Log.d(TAG, "name not found");
+//            }
+//        }
+
+//        if(_device.getName() == null){
+//            Log.d(TAG, "name not found");
+//        }
+//        if(!_device.getName().matches(mDeviceName)){
+//            Log.d(TAG, "name does not match");
+//        }
+//        if (_device != null && _device.getName() != null && _device.getName().matches(mDeviceName)) {
+//            stopScan();
+//            mDevice = _device;
+//
+//            Log.i(TAG,"mac address : " + mDevice.getAddress() + ", name : " + mDevice.getName());
+//            mDeviceFoundLatch.countDown();
+//        }
+        if (_device != null) {
             stopScan();
             mDevice = _device;
 
-            Log.i(TAG,"mac address : " + mDevice.getAddress() + ", name : " + mDevice.getName());
+            Log.i(TAG,"mac address : " + mDevice.getAddress());
             mDeviceFoundLatch.countDown();
         }
     }
