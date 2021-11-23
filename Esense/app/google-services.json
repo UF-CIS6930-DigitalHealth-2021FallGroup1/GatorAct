@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "114752303177",
+    "project_id": "gatoract-17521",
+    "storage_bucket": "gatoract-17521.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:114752303177:android:91ac2a670308eb04ab0f98",
+        "android_client_info": {
+          "package_name": "com.sozolab.sumon"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "114752303177-0t2qek0ubcfm074u0g5kqq7v6q1797so.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDfa_n55wX-mmT5oXty9ej3Dab4grqcwRs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "114752303177-0t2qek0ubcfm074u0g5kqq7v6q1797so.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
