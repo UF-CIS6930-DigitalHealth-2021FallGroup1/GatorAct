@@ -25,6 +25,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.sozolab.sumon.io.esense.esenselib.ESenseManager;
@@ -40,7 +41,7 @@ import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private String TAG = "Esense";
-    private String deviceName = "eSense-0181";  // "eSense-0598"
+    private String deviceName = "eSense-1625";  // "eSense-0598"
     private String activityName = "Activity";
     private int timeout = 30000;
 
@@ -310,7 +311,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         boolean isConnected = isESenseDeviceConnected();
         if(isConnected){
-            //Toast.makeText(this, "Connected", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Connected", Toast.LENGTH_SHORT).show();
         }else{
             sharedPrefEditor.putString("status", "disconnected");
             sharedPrefEditor.commit();

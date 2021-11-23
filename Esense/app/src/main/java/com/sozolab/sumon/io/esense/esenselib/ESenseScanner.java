@@ -45,11 +45,47 @@ public class ESenseScanner extends ScanCallback {
     public void onScanResult(int callbackType, ScanResult result) {
         super.onScanResult(callbackType, result);
         BluetoothDevice _device = result.getDevice();
-        if (_device != null && _device.getName() != null && _device.getName().matches(mDeviceName)) {
+//        if(_device != null){
+//            Log.d(TAG, "device found");
+//            String name = result.getScanRecord().getDeviceName();
+////            String name = _device.getName();
+//            String record = result.toString();
+//            Log.d(TAG, "record: " + record);
+//            if(name != null){
+//                Log.d(TAG, "name found");
+//            }
+//            if(name == null){
+//                Log.d(TAG, "name not found");
+//            }
+//        }
+
+//        if(_device.getName() == null){
+//            Log.d(TAG, "name not found");
+//        }
+//        if(!_device.getName().matches(mDeviceName)){
+//            Log.d(TAG, "name does not match");
+//        }
+//        if (_device != null && _device.getName() != null && _device.getName().matches(mDeviceName)) {
+//            stopScan();
+//            mDevice = _device;
+//
+//            Log.i(TAG,"mac address : " + mDevice.getAddress() + ", name : " + mDevice.getName());
+//            mDeviceFoundLatch.countDown();
+//        }
+        Log.d(TAG, "_device_mac: " + _device.getAddress() + ", name:" + _device.getName() + ", device bond state:" + _device.getBondState());
+        String matchEsenseDeviceName = "";
+        // use direct esense mac address if the name is unable to reach
+        // String matchEsenseMacAddress = "00:04:79:00:0C:8D";
+
+        if(_device != null) {
+            matchEsenseDeviceName = _device.getName();
+        }
+
+        if (_device != null && matchEsenseDeviceName != null && matchEsenseDeviceName.contains("eSense")) {
             stopScan();
             mDevice = _device;
 
-            Log.i(TAG,"mac address : " + mDevice.getAddress() + ", name : " + mDevice.getName());
+            Log.i(TAG,"mac address : " + mDevice.getAddress());
             mDeviceFoundLatch.countDown();
         }
     }
