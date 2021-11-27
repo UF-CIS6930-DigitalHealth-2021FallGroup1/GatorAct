@@ -1,17 +1,29 @@
+package com.sozolab.sumon.counter.model;
+
 import static com.google.firebase.firestore.Query.Direction.DESCENDING;
 
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.SetOptions;
 
 public class Summary {
     private String TAG = "Summary";
@@ -23,7 +35,9 @@ public class Summary {
     private String mId;
     private Date mDate;
     private Map<String, Integer> mCounters;
+    private Map<String, Object> docData;
 
+    FirebaseFirestore db = FirebaseFirestore.getInstance();
     Query collection = FirebaseFirestore.getInstance().collection(collectionName).orderBy("date", DESCENDING);
 
     public Summary(){
@@ -42,95 +56,107 @@ public class Summary {
         if (!mIds.contains(id)) {
             mIds.add(id);
         }
+        // fromDocument()
         mId = id;
         mDate = date;
         mCounters = counters;
     }
 
-//    public void fromDocument(DocumentSnapshot document) {
-//        mId = document.getId();
-//        mDate = document.getDate("date");
-//        mCounters = document.get("counters"));
-//    }
-
-//    factory Summary.create() {
-//        return Summary(null, new Date(), {
-//        SITUPS: 0,
-//        PUSHUPS: 0,
-//        JUMPING_JACKS: 0,
-//        SQUATS: 0,
-//        });
-//    }
-
-    Future<Summary> add() async {
-        DocumentReference docRef = await Firestore.instance
-            .collection(collectionName)
-            .add({'date': this.date, 'counters': this.counters});
-        this.id = docRef.documentID;
-        return this;
+    private void putData(){
+        docData = new HashMap<>();
+        docData.put("date", mDate);
+        docData.put("counters", mCounters);
     }
 
-//    Future<Summary> pull() async {
-//        DocumentSnapshot docRef = await Firestore.instance
-//            .collection(collectionName)
-//            .document(this.id)
-//            .get();
-//        return Summary.fromDocument(docRef);
-//    }
+    // add()
+    public Task<Void> add(){
+        DocumentReference newDocRef = db.collection(collectionName).document();
+        mId = newDocRef.getId();
+        putData();
+        return newDocRef.set(docData)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d(TAG, "ActivityTransition successfully written!");
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w(TAG, "Error writing ActivityTransition", e);
+                    }
+                });
+    }
 
-    Future<Summary> submit() async {
-        if (this.id == null) {
-        this.add();
+    // Future<Summary> pull() async {
+    //     DocumentSnapshot docRef = await Firestore.instance
+    //         .collection(collectionName)
+    //         .document(this.id)
+    //         .get();
+    //     return Summary.fromDocument(docRef);
+    // }
+
+    public Task<Void> submit() {
+        // create a new summary and save to Firestore if the ID does not exist
+        // else update the document
+        if (mId == null) {
+            add();
         }
-        await Firestore.instance
-            .collection(collectionName)
-            .document(this.id)
-            .setData({
-        'date': this.date,
-        'counters': this.counters
-        }, merge: true);
-        return this;
+        return db.collection(collectionName).document(mId).set(docData, SetOptions.merge())
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d(TAG, "ActivityTransition successfully written!");
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w(TAG, "Error writing ActivityTransition", e);
+                    }
+                });
     }
 
-    Summary reset() {
-        Log.d(TAG, "resetting summary for date: " + new SimpleDateFormat("HH:mm:ss", Locale.US).format(date));
-        for (var key in this.counters.keys) {
-        this.counters[key] = 0;
+    public void reset() {
+        Log.d(TAG, "resetting summary for date: " + new SimpleDateFormat("HH:mm:ss", Locale.US).format(mDate));
+        for(String key : mCounters.keySet()){
+            mCounters.put(key, 0);
         }
-        return this;
     }
 
-    Summary increment(String label) {
-        this.counters[label] += 1;
-        return this;
+    public void increment(String label) {
+        mCounters.put(label, mCounters.get(label) + 1);
     }
 
-    Summary decrement(String label) {
-        this.counters[label] -= 1;
-        return this;
+    public void decrement(String label) {
+        mCounters.put(label, mCounters.get(label) - 1);
     }
 
-    bool get isFromToday {
-        final today = DateTime.now();
-        return (this.date.year == today.year &&
-            this.date.month == today.month &&
-            this.date.day == today.day);
+    public boolean isFromToday() {
+        final Date today = new Date();
+        ZoneId newYorkZoneId = ZoneId.of("America/New_York"); // ZoneId.systemDefault()
+        LocalDate localToday = today.toInstant().atZone(newYorkZoneId).toLocalDate();
+        LocalDate localDate = mDate.toInstant().atZone(newYorkZoneId).toLocalDate();
+        return (localDate.getYear() == localToday.getYear() &&
+                localDate.getMonthValue() == localToday.getMonthValue() &&
+                localDate.getDayOfMonth() == localToday.getDayOfMonth());
     }
 
     String toAccessibleString() {
-        String result = '';
-        var entries = this.counters.entries.where((entry) => entry.value > 0);
-        for (var entry in entries) {
-        if (result != '') {
-            if (entry.key == entries.last.key)
-            result += ' and ';
-            else
-            result += ', ';
+        String result = "";
+        // Map<String, Integer> entries = new HashMap<>();
+        for (Map.Entry<String, Integer> exercise : mCounters.entrySet()) {
+            if(exercise.getValue() > 0){
+                // linkedHashMap.put(employee.getKey(), employee.getValue());
+                if(result != ""){
+                    result += ", ";
+                }
+                result += Integer.toString(exercise.getValue()) + " " + exercise.getKey();
+            }
         }
-        result += '${entry.value} ${entry.key}';
+        if(result == ""){
+            result = "no exercise";
         }
-        if (result == '')
-        result = 'no exercise';
         return result;
     }
 }
