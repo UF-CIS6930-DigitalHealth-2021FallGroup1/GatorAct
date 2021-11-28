@@ -4,12 +4,12 @@ public class SensorValues {
     private double mX;
     private double mY;
     private double mZ;
-    public void SensorValues(double x, double y, double z){
+    public SensorValues(double x, double y, double z){
         mX = x;
         mY = y;
         mZ = z;
     }
-    public void SensorValues(double[] list){
+    public SensorValues(double[] list){
         mX = list[0];
         mY = list[1];
         mZ = list[2];
@@ -36,6 +36,10 @@ public class SensorValues {
     // }
 
     // operators: +, -, /, abs()
+    public SensorValues subtract(SensorValues other){
+        return new SensorValues(mX-other.getX(), mY-other.getY(), mZ-other.getZ());
+    }
+
     // > (larger than): x || y || z
     // == (equals to): x && y && z
 }
