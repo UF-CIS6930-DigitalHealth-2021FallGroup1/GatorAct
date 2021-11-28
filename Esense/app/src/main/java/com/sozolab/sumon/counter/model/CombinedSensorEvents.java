@@ -8,13 +8,13 @@ public class CombinedSensorEvents {
     private SensorValues mPhone;
     private SensorValues mESense;
     
-    public void CombinedSensorEvents(){
+    public CombinedSensorEvents(){
         mPhone = new SensorValues(0, 0, 0);
         mESense = new SensorValues(0, 0, 0);
         mTimestamp = new Date();
     }
 
-    public void CombinedSensorEvents(double pX, double pY, double pZ, double eX, double eY, double eZ){
+    public CombinedSensorEvents(double pX, double pY, double pZ, double eX, double eY, double eZ){
         mPhone = new SensorValues(pX, pY, pZ);
         mESense = new SensorValues(eX, eY, eZ);
         mTimestamp = new Date();
