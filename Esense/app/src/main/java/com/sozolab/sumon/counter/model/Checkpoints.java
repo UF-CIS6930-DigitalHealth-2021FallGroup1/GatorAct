@@ -18,7 +18,7 @@ public class Checkpoints {
     public SensorValues getDelta1(){
         return deltaType1;
     }
-    public double get getDelta2(){
+    public double getDelta2(){
         return deltaType2;
     }
 }

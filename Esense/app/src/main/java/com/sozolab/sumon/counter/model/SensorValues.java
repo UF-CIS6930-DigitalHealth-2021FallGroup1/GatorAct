@@ -40,6 +40,25 @@ public class SensorValues {
         return new SensorValues(mX-other.getX(), mY-other.getY(), mZ-other.getZ());
     }
 
+    public void incrementBy(SensorValues other){
+        mX += other.getX();
+        mY += other.getY();
+        mZ += other.getZ();
+    }
+
+    public void dividedBy(double number){
+        mX /= number;
+        mY /= number;
+        mZ /= number;
+    }
+
+    public SensorValues abs(){
+        return new SensorValues(Math.abs(mX), Math.abs(mY), Math.abs(mZ));
+    }
+
+    public boolean largerThan(double number){
+        return mX > number || mY > number || mZ > number;
+    }
     // > (larger than): x || y || z
     // == (equals to): x && y && z
 }

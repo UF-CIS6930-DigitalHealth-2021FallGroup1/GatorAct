@@ -20,6 +20,14 @@ public class CombinedSensorEvents {
         mTimestamp = new Date();
     }
 
+    public SensorValues getPhoneEvent(){
+        return mPhone;
+    }
+
+    public SensorValues getESenseEvent(){
+        return mESense;
+    }
+
     //onUpdate()
 
     //toString()

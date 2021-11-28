@@ -5,6 +5,7 @@ import com.sozolab.sumon.counter.model.SensorValues;
 import com.sozolab.sumon.counter.model.Checkpoints;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Timer;
 import java.util.function.Function;
@@ -23,7 +24,7 @@ public class ActivityClassifier {
     private String currentActivity;
     private String bodyPosture;
     private List<String> compatibleActivities;
-    private List<List<Checkpoints>> checkpoints; // List<List<dynamic>>: [SensorValues, double]
+    private List<Checkpoints> checkpoints; // List<List<dynamic>>: [SV, SV/double] -> List<Checkpoints>: [SV, SV, double]
     private Timer inactivityTimer;
     public Function<String, Boolean> onActivity; // onActivity.apply(String)
 
@@ -47,12 +48,48 @@ public class ActivityClassifier {
         }
     }
 
-    public void push(List<CombinedSensorEvents> list){
-        //DO SOMETHING
+    public void push(List<CombinedSensorEvents> scope){
+        Collections.reverse(scope);
+        List<CombinedSensorEvents> cropped = scope.subList(0, eSenseWindowSize); // take(eSenseWindowSize)
+        SensorValues result = new SensorValues(0, 0, 0);
+        for(CombinedSensorEvents events : cropped){
+            result.incrementBy(events.getESenseEvent()); //map().reduce()
+        }
+        result.dividedBy((double) eSenseWindowSize);
+
+        // eSense data changed
+        boolean anyChange = false;
+        if(eSenseMovingAverage == null || result.subtract(eSenseMovingAverage).abs().largerThan(eSenseLowpassThreshold)){
+            eSenseMovingAverage = result;
+            anyChange = true;
+        }
+
+        if(phoneMovingAverage == null || !anyChange){
+            List<CombinedSensorEvents> croppedPhone = scope.subList(0, phoneWindowSize);
+            SensorValues phoneRes = new SensorValues(0, 0, 0);
+            for(CombinedSensorEvents events : croppedPhone){
+                phoneRes.incrementBy(events.getPhoneEvent()); //map().reduce()
+            }
+            phoneRes.dividedBy((double) phoneWindowSize);
+            result = phoneRes;
+            // phone data changed
+            if(phoneMovingAverage == null || result.subtract(phoneMovingAverage).abs().largerThan(phoneLowpassThreshold)){
+                phoneMovingAverage = result;
+                anyChange = true;
+                setPosture();
+            }
+        }
+
+        // something changed => check for activity
+        if(anyChange){
+            classifyActivity();
+        }
+
     }
 
     private void submitActivity(String name){
         currentActivity = name;
+        onActivity.apply(name);
         if(name != "NEUTRAL"){
             compatibleActivities.add(name);
         }
@@ -71,7 +108,12 @@ public class ActivityClassifier {
     }
 
     private void resetCheckpoints(){
-        //DO SOMETHING
+        
+        checkpoints.clear();
+        compatibleActivities.clear();
+        if(currentActivity != "NEUTRAL"){
+            submitActivity("NEUTRAL");
+        }
     }
 
     public void classifyActivity(){
@@ -129,15 +171,15 @@ public class ActivityClassifier {
             if(compatibleActivities.contains("PUSHUPS")){
                 if(phoneMovingAverage.getZ() > -0.4){
                     compatibleActivities.remove("PUSHUPS");
-                }else if(checkpoints.length == 1){
+                }else if(checkpoints.size() == 1){
                     prepNextCheckpoint(currentDelta);
-                }else if(checkpoints.length == 2){
+                }else if(checkpoints.size() == 2){
                     if(Math.signum(prevDeltaType1.getY()) != Math.signum(currentDelta.getY()) && Math.abs(currentDelta.getY() - currentDelta.getX()) / 2 > 0.3) {
                         prepNextCheckpoint(currentDelta);
                     }
-                }else if(checkpoints.length == 3){
+                }else if(checkpoints.size() == 3){
                     if(Math.signum(prevDeltaType1.getY()) != Math.signum(currentDelta.getY()) && Math.abs(currentDelta.getY() - currentDelta.getX()) / 2 > 0.3) {
-                        submitActivity(PUSHUPS);
+                        submitActivity("PUSHUPS");
                         checkpoints.remove(checkpoints.size()-1);
                         checkpoints.remove(checkpoints.size()-1);
                         prepNextCheckpoint(currentDelta);
@@ -145,7 +187,7 @@ public class ActivityClassifier {
                 }
             }
             if(compatibleActivities.contains("SQUATS")){
-                if(checkpoints.length == 1) {
+                if(checkpoints.size() == 1) {
                     // CHEST UP: knees are bent over 90 deg, same leg position as sit-ups
                     if((bodyPosture == "KNEES_BENT" || bodyPosture == "CHEST_UP")){
                         prepNextCheckpoint();  // give sit-ups a chance to detect
@@ -154,7 +196,7 @@ public class ActivityClassifier {
                             compatibleActivities.remove("SQUATS");
                         }
                     }
-                }else if(checkpoints.length == 2){
+                }else if(checkpoints.size() == 2){
                     if(bodyPosture == "STANDING"){
                         submitActivity("SQUATS");
                         checkpoints.remove(checkpoints.size()-1);
@@ -166,24 +208,24 @@ public class ActivityClassifier {
             if(compatibleActivities.contains("JUMPING_JACKS")){
                 if(phoneMovingAverage.getZ() < -0.4){
                     compatibleActivities.remove("JUMPING_JACKS");
-                }else if(checkpoints.length == 1){
+                }else if(checkpoints.size() == 1){
                     prepNextCheckpoint(currentDelta);
-                }else if(checkpoints.length == 2){
+                }else if(checkpoints.size() == 2){
                     if(Math.signum(prevDeltaType1.getX()) != Math.signum(currentDelta.getX())){
                         if(Math.abs(currentDelta.getX() * (2/3) - (1/3) * currentDelta.getY()) > 0.2)
                             prepNextCheckpoint(currentDelta);
                     }   
-                }else if(checkpoints.length == 3){
+                }else if(checkpoints.size() == 3){
                     if(Math.signum(prevDeltaType1.getX()) != Math.signum(currentDelta.getX())){
                         if(Math.abs(currentDelta.getX() * (2/3) - (1/3) * currentDelta.getY()) > 0.3)
                             prepNextCheckpoint(currentDelta);
                     }
-                }else if(checkpoints.length == 4){
+                }else if(checkpoints.size() == 4){
                     if(Math.signum(prevDeltaType1.getX()) != Math.signum(currentDelta.getX())){
                         if(Math.abs(currentDelta.getX() * (2/3) - (1/3) * currentDelta.getY()) > 0.2)
                             prepNextCheckpoint(currentDelta);
                     }
-                }else if(checkpoints.length == 5) {
+                }else if(checkpoints.size() == 5) {
                     if(Math.signum(prevDeltaType1.getX()) != Math.signum(currentDelta.getX())){
                         if(Math.abs(currentDelta.getX() * (2/3) - (1/3) * currentDelta.getY()) > 0.3){
                             submitActivity("JUMPING_JACKS");
