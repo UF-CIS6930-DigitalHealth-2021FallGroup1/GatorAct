@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Timer;
+import java.util.TimerTask;
 import java.util.function.Function;
 
 public class ActivityClassifier {
@@ -96,19 +97,52 @@ public class ActivityClassifier {
     }
 
     private void prepNextCheckpoint(){
-        //DO SOMETHING
+        if(inactivityTimer != null)
+            inactivityTimer.cancel();
+        inactivityTimer = new Timer("Timer");
+        inactivityTimer.scheduleAtFixedRate(repeatedResetCkpts, 500L, 3000L);
+        Checkpoints ckpt = new Checkpoints(eSenseMovingAverage, new SensorValues(0, 0, 0), 0);
+        checkpoints.add(ckpt);
     }
 
     private void prepNextCheckpoint(double data){
-        //DO SOMETHING
+        if(inactivityTimer != null)
+            inactivityTimer.cancel();
+        inactivityTimer = new Timer("Timer");
+        inactivityTimer.scheduleAtFixedRate(repeatedResetCkpts, 500L, 3000L);
+        Checkpoints ckpt = new Checkpoints(eSenseMovingAverage, new SensorValues(0, 0, 0), data);
+        checkpoints.add(ckpt);
     }
 
     private void prepNextCheckpoint(SensorValues data){
-        //DO SOMETHING
+        if(inactivityTimer != null)
+            inactivityTimer.cancel();
+        inactivityTimer = new Timer("Timer");
+        inactivityTimer.scheduleAtFixedRate(repeatedResetCkpts, 500L, 3000L);
+        Checkpoints ckpt = new Checkpoints(eSenseMovingAverage, data, 0);
+        checkpoints.add(ckpt);
     }
 
+    // private class ResetCheckpoints extends TimerTask {
+    //     @Override
+    //     public void run(){
+
+    //     }
+    // }
+
+    TimerTask repeatedResetCkpts = new TimerTask(){
+        public void run(){
+            // cancel();
+            checkpoints.clear();
+            compatibleActivities.clear();
+            if(currentActivity != "NEUTRAL"){
+                submitActivity("NEUTRAL");
+            }
+        }
+    };
+    
     private void resetCheckpoints(){
-        
+        // timer.cancel();
         checkpoints.clear();
         compatibleActivities.clear();
         if(currentActivity != "NEUTRAL"){

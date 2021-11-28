@@ -11,15 +11,16 @@ import java.util.Queue;
 public class ActivitySubscription {
     private Queue<CombinedSensorEvents> mSensorEvents;
     private ActivityClassifier activityClassifier;
+    private int bufferSize = 100;
     public ActivitySubscription(){
         mSensorEvents = new LinkedList<>();
     }
-}
 
-public void submitEvent(CombinedSensorEvents event){
-    mSensorEvents.add(event);
-    if(mSensorEvents.){
-        mSensorEvents.remove();
-        activityClassifier.push((List) mSensorEvents);
+    public void submitEvent(CombinedSensorEvents event){
+        mSensorEvents.add(event);
+        if(mSensorEvents.size() > bufferSize){
+            mSensorEvents.remove();
+            activityClassifier.push((List) mSensorEvents);
+        }
     }
 }
