@@ -1,5 +1,6 @@
 package com.sozolab.sumon;
 
+import android.graphics.Color;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothHeadset;
 import android.content.Context;
@@ -28,10 +29,19 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import com.github.mikephil.charting.charts.BarChart;
+import com.github.mikephil.charting.data.BarData;
+import com.github.mikephil.charting.data.BarDataSet;
+import com.github.mikephil.charting.data.BarEntry;
+import com.github.mikephil.charting.utils.ColorTemplate;
+
+import com.github.mikephil.charting.data.BarData;
 import com.sozolab.sumon.io.esense.esenselib.ESenseManager;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
 
 import static android.Manifest.permission.RECORD_AUDIO;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
@@ -63,6 +73,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ProgressBar progressBar;
     private SharedPreferences sharedPreferences;
     private SharedPreferences.Editor sharedPrefEditor;
+
+    private BarChart barChart;
+    private BarData barData;
+    private BarDataSet barDataSet;
+    private ArrayList barEntries;
+
 
     Calendar currentTime;
     ESenseManager eSenseManager;
@@ -124,6 +140,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             activityListView.setAdapter(new ActivityListAdapter(this, activityHistory));
         }
 
+        // BarChart
+        barChart = findViewById(R.id.BarChart);
+        getEntries();
+        barDataSet = new BarDataSet(barEntries, "");
+        barData = new BarData(barDataSet);
+        barChart.setData(barData);
+        barDataSet.setColors(ColorTemplate.JOYFUL_COLORS);
+        barDataSet.setValueTextColor(Color.BLACK);
+        barDataSet.setValueTextSize(18f);
+
+
         audioRecordServiceIntent = new Intent(this, AudioRecordService.class);
         sensorListenerManager = new SensorListenerManager(this);
         connectionListenerManager = new ConnectionListenerManager(this, sensorListenerManager,
@@ -135,6 +162,29 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         } else {
             Log.d(TAG, "Permission already granted..");
         }
+    }
+
+    private void getEntries() {
+        barEntries = new ArrayList<>();
+
+        // turn Firebase data into bar data
+        Map<String, Integer> data = new HashMap<>();
+        data.put("SITUPS", 2);
+        data.put("PUSHUPS", 3);
+        data.put("JUMPING_JACKS", 10);
+        data.put("SQUATS", 8);
+        int count = 1;
+        for (Map.Entry<String,Integer> entry : data.entrySet()) {
+            barEntries.add(new BarEntry(2f * count, entry.getValue()));
+            count++;
+        }
+
+//        barEntries.add(new BarEntry(2f, 0));
+//        barEntries.add(new BarEntry(4f, 1));
+//        barEntries.add(new BarEntry(6f, 1));
+//        barEntries.add(new BarEntry(8f, 3));
+//        barEntries.add(new BarEntry(7f, 4));
+//        barEntries.add(new BarEntry(3f, 3));
     }
 
     public static boolean isESenseDeviceConnected() {
@@ -175,6 +225,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
 
         switch (v.getId()){
+            case R.id.queryButton:
+                Grafana g = new Grafana();
+                String name = "test";
+                System.out.println("name = " + name);
+                g.testQuery(name);
+                break;
+
             case R.id.connectButton:
                 progressBar.setVisibility(View.VISIBLE);
                 connectEarables();

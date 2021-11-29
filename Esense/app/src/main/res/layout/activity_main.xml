@@ -209,6 +209,11 @@
         app:layout_constraintBottom_toBottomOf="@+id/speakingButton"
         app:layout_constraintEnd_toEndOf="parent" />
 
+    <com.github.mikephil.charting.charts.BarChart
+        android:id = "@+id/BarChart"
+        android:layout_width = "fill_parent"
+        android:layout_height = "fill_parent" />
+
     <TextView
         android:id="@+id/activityhistoryTV"
         android:layout_width="wrap_content"
@@ -231,10 +236,12 @@
         android:layout_marginStart="44dp"
         android:layout_marginTop="8dp"
         android:layout_marginBottom="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toBottomOf="@+id/speak_walk_button"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toEndOf="@+id/noddingButton"
-        app:layout_constraintTop_toBottomOf="@+id/activityhistoryTV" />
+        app:layout_constraintTop_toBottomOf="@+id/activityhistoryTV"
+        app:layout_constraintVertical_bias="1.0" />
 
     <ToggleButton
         android:id="@+id/recordButton"
@@ -266,5 +273,14 @@
         app:layout_constraintEnd_toStartOf="@+id/statusImage"
         app:layout_constraintStart_toEndOf="@+id/connectButton"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/queryButton"
+        android:layout_width="110dp"
+        android:layout_height="47dp"
+        android:onClick="onClick"
+        android:text="Query DB"
+        app:layout_constraintTop_toBottomOf="@+id/speak_walk_button"
+        tools:layout_editor_absoluteX="8dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
