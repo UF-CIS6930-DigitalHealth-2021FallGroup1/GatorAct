@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Environment;
 import android.util.Log;
 
+import com.sozolab.sumon.counter.utils.ActivitySubscription;
 import com.sozolab.sumon.io.esense.esenselib.ESenseConfig;
 import com.sozolab.sumon.io.esense.esenselib.ESenseEvent;
 import com.sozolab.sumon.io.esense.esenselib.ESenseSensorListener;
@@ -41,8 +42,10 @@ public class SensorListenerManager implements ESenseSensorListener {
     String activityName;
     int activityIndex;
 
-    public SensorListenerManager(Context context){
+    ActivitySubscription activitySubscription;
+    public SensorListenerManager(Context context, ActivitySubscription activitySubscription){
         this.context = context;
+        this.activitySubscription = activitySubscription;
         eSenseConfig = new ESenseConfig();
         rowIndex = 1;
         activityIndex = -1;
@@ -64,47 +67,51 @@ public class SensorListenerManager implements ESenseSensorListener {
         //Log.d(TAG, "onSensorChanged()");
 
         if (dataCollecting){
+            timeStamp = evt.getTimestamp();
+            accel = evt.convertAccToG(eSenseConfig);
+            gyro = evt.convertGyroToDegPerSecond(eSenseConfig);
 
-            if(excelSheet != null){
-                rowIndex++;
-
-                timeStamp = evt.getTimestamp();
-                accel = evt.convertAccToG(eSenseConfig);
-                gyro = evt.convertGyroToDegPerSecond(eSenseConfig);
-
-                Row dataRow = excelSheet.createRow(rowIndex);
-                Cell dataCell = null;
-                dataCell = dataRow.createCell(0);
-                dataCell.setCellValue(timeStamp);
-
-                dataCell = dataRow.createCell(1);
-                dataCell.setCellValue(accel[0]);
-
-                dataCell = dataRow.createCell(2);
-                dataCell.setCellValue(accel[1]);
-
-                dataCell = dataRow.createCell(3);
-                dataCell.setCellValue(accel[2]);
-
-                dataCell = dataRow.createCell(4);
-                dataCell.setCellValue(gyro[0]);
-
-                dataCell = dataRow.createCell(5);
-                dataCell.setCellValue(gyro[1]);
-
-                dataCell = dataRow.createCell(6);
-                dataCell.setCellValue(gyro[2]);
-
-                dataCell = dataRow.createCell(7);
-                dataCell.setCellValue(String.valueOf(activityIndex));
-
-                dataCell = dataRow.createCell(8);
-                dataCell.setCellValue(activityName);
-
-                String sensorData = "Index : " + activityIndex + " Activity : " + activityName + " Row : " + rowIndex + " Time : " + timeStamp
-                        + " accel : " + accel[0] + " " + accel[1] + " " + accel[2] + " gyro : " + gyro[0] + " " + gyro[1] + " " + gyro[2];
-                Log.d(TAG, sensorData);
-            }
+            activitySubscription.updateEsenseAcc(accel[0], accel[1], accel[2]);
+//            if(excelSheet != null){
+//                rowIndex++;
+//
+//                timeStamp = evt.getTimestamp();
+//                accel = evt.convertAccToG(eSenseConfig);
+//                gyro = evt.convertGyroToDegPerSecond(eSenseConfig);
+//
+//                Row dataRow = excelSheet.createRow(rowIndex);
+//                Cell dataCell = null;
+//                dataCell = dataRow.createCell(0);
+//                dataCell.setCellValue(timeStamp);
+//
+//                dataCell = dataRow.createCell(1);
+//                dataCell.setCellValue(accel[0]);
+//
+//                dataCell = dataRow.createCell(2);
+//                dataCell.setCellValue(accel[1]);
+//
+//                dataCell = dataRow.createCell(3);
+//                dataCell.setCellValue(accel[2]);
+//
+//                dataCell = dataRow.createCell(4);
+//                dataCell.setCellValue(gyro[0]);
+//
+//                dataCell = dataRow.createCell(5);
+//                dataCell.setCellValue(gyro[1]);
+//
+//                dataCell = dataRow.createCell(6);
+//                dataCell.setCellValue(gyro[2]);
+//
+//                dataCell = dataRow.createCell(7);
+//                dataCell.setCellValue(String.valueOf(activityIndex));
+//
+//                dataCell = dataRow.createCell(8);
+//                dataCell.setCellValue(activityName);
+//
+//                String sensorData = "Index : " + activityIndex + " Activity : " + activityName + " Row : " + rowIndex + " Time : " + timeStamp
+//                        + " accel : " + accel[0] + " " + accel[1] + " " + accel[2] + " gyro : " + gyro[0] + " " + gyro[1] + " " + gyro[2];
+//                Log.d(TAG, sensorData);
+//            }
         }
     }
 
