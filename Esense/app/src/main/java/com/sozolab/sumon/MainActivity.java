@@ -71,6 +71,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     DatabaseHandler databaseHandler;
     FireStoreHandler fireStoreHandler;
     SensorListenerManager sensorListenerManager;
+    PhoneSensorListenerManager phoneSensorListenerManager;
     ConnectionListenerManager connectionListenerManager;
     private static final int PERMISSION_REQUEST_CODE = 200;
 
@@ -126,6 +127,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         audioRecordServiceIntent = new Intent(this, AudioRecordService.class);
         sensorListenerManager = new SensorListenerManager(this);
+        phoneSensorListenerManager = new PhoneSensorListenerManager(this);
         connectionListenerManager = new ConnectionListenerManager(this, sensorListenerManager,
                 connectionTextView, deviceNameTextView, statusImageView, progressBar, sharedPrefEditor);
         eSenseManager = new ESenseManager(deviceName, MainActivity.this.getApplicationContext(), connectionListenerManager);
@@ -385,10 +387,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     public void startDataCollection(String activity){
         sensorListenerManager.startDataCollection(activity);
+        phoneSensorListenerManager.startDataCollection(activity);
     }
 
     public void stopDataCollection(){
         sensorListenerManager.stopDataCollection();
+        phoneSensorListenerManager.stopDataCollection();
     }
 
     private boolean checkPermission() {

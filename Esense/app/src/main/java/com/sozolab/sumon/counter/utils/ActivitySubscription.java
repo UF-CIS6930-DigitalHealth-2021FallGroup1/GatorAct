@@ -11,6 +11,8 @@ import java.util.Queue;
 public class ActivitySubscription {
     private Queue<CombinedSensorEvents> mSensorEvents;
     private ActivityClassifier activityClassifier;
+
+//    private ombinedSensorEvents combinedEvent = CombinedSensorEvents;
     private int bufferSize = 100;
     public ActivitySubscription(){
         mSensorEvents = new LinkedList<>();
@@ -22,5 +24,13 @@ public class ActivitySubscription {
             mSensorEvents.remove();
             activityClassifier.push((List) mSensorEvents);
         }
+    }
+
+    public void onPhoneData() {
+
+    }
+
+    public void onSenseData() {
+
     }
 }
