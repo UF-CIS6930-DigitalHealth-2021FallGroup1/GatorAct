@@ -29,6 +29,7 @@ import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.sozolab.sumon.io.esense.esenselib.ESenseManager;
+import com.sozolab.sumon.counter.utils.ActivitySubscription;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -72,8 +73,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     FireStoreHandler fireStoreHandler;
     SensorListenerManager sensorListenerManager;
     PhoneSensorListenerManager phoneSensorListenerManager;
+    ActivitySubscription activitySubscription;
     ConnectionListenerManager connectionListenerManager;
     private static final int PERMISSION_REQUEST_CODE = 200;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -126,8 +129,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         audioRecordServiceIntent = new Intent(this, AudioRecordService.class);
-        sensorListenerManager = new SensorListenerManager(this);
-        phoneSensorListenerManager = new PhoneSensorListenerManager(this);
+
+        // Adding activity counter
+        activitySubscription = new ActivitySubscription(MainActivity::handleActivity);
+        sensorListenerManager = new SensorListenerManager(this, activitySubscription);
+        phoneSensorListenerManager = new PhoneSensorListenerManager(this, activitySubscription);
+
         connectionListenerManager = new ConnectionListenerManager(this, sensorListenerManager,
                 connectionTextView, deviceNameTextView, statusImageView, progressBar, sharedPrefEditor);
         eSenseManager = new ESenseManager(deviceName, MainActivity.this.getApplicationContext(), connectionListenerManager);
@@ -137,6 +144,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         } else {
             Log.d(TAG, "Permission already granted..");
         }
+    }
+
+    public static boolean handleActivity(String activity) {
+        return true;
     }
 
     public static boolean isESenseDeviceConnected() {

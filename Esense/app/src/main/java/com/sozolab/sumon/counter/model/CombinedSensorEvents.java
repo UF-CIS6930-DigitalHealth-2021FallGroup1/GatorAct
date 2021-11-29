@@ -5,8 +5,8 @@ import java.util.Date;
 public class CombinedSensorEvents {
     
     private Date mTimestamp;
-    private SensorValues mPhone;
-    private SensorValues mESense;
+    public SensorValues mPhone;
+    public SensorValues mESense;
     
     public CombinedSensorEvents(){
         mPhone = new SensorValues(0, 0, 0);

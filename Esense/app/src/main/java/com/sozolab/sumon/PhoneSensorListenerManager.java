@@ -9,6 +9,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.util.Log;
 
+import com.sozolab.sumon.counter.utils.ActivitySubscription;
 import com.sozolab.sumon.io.esense.esenselib.ESenseConfig;
 
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -33,14 +34,16 @@ public class PhoneSensorListenerManager implements SensorEventListener {
     Context context;
     String activityName;
 
-    public PhoneSensorListenerManager(Context context) {
-        Log.d(TAG, "PhoneSensorListenerManager Create");
+    ActivitySubscription activitySubscription;
+    public PhoneSensorListenerManager(Context context, ActivitySubscription activitySubscription) {
         this.context = context;
+        this.activitySubscription = activitySubscription;
         activityName = "";
         dataCollecting = false;
         mSensorManager = (SensorManager)context.getSystemService(Context.SENSOR_SERVICE);
         mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         mSensorManager.registerListener(this, mAccelerometer , SensorManager.SENSOR_DELAY_NORMAL);
+        Log.d(TAG, "PhoneSensorListenerManager Create");
     }
 
 //    protected void onResume() {
@@ -54,12 +57,12 @@ public class PhoneSensorListenerManager implements SensorEventListener {
 //    }
 
     @Override
-    public void onSensorChanged(SensorEvent event) {
+    public void onSensorChanged(SensorEvent evt) {
         if(dataCollecting) {
-            Log.d(TAG, "Phone onSensorChanged dataCollecting start");
-            if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-                String sensorData = "Accel x: " + event.values[0] + ", y: " + event.values[1] + ", z: " + event.values[2];
-                Log.d(TAG, sensorData);
+            if (evt.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+//                String sensorData = "Accel x: " + evt.values[0] + ", y: " + evt.values[1] + ", z: " + evt.values[2];
+//                Log.d(TAG, sensorData);
+                this.activitySubscription.updatePhoneAcc(evt.values[0], evt.values[1], evt.values[2]);
             }
         }
     }
