@@ -10,21 +10,26 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.SystemClock;
+
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
@@ -79,6 +84,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private BarDataSet barDataSet;
     private ArrayList barEntries;
 
+    private String selectedDate;
+
 
     Calendar currentTime;
     ESenseManager eSenseManager;
@@ -100,11 +107,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         actionBar.setDisplayShowHomeEnabled(true);
         actionBar.setIcon(R.mipmap.esense);
 
-        sharedPreferences = getSharedPreferences("eSenseSharedPrefs",Context.MODE_PRIVATE);
+        sharedPreferences = getSharedPreferences("eSenseSharedPrefs", Context.MODE_PRIVATE);
         sharedPrefEditor = sharedPreferences.edit();
 
         recordButton = (ToggleButton) findViewById(R.id.recordButton);
-        connectButton =  (Button) findViewById(R.id.connectButton);
+        connectButton = (Button) findViewById(R.id.connectButton);
         headShakeButton = (Button) findViewById(R.id.headShakeButton);
         speakingButton = (Button) findViewById(R.id.speakingButton);
         noddingButton = (Button) findViewById(R.id.noddingButton);
@@ -136,7 +143,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         databaseHandler = new DatabaseHandler(this);
         activityListView = (ListView) findViewById(R.id.activityListView);
         ArrayList<Activity> activityHistory = databaseHandler.getAllActivities();
-        if(activityHistory.size() > 0){
+        if (activityHistory.size() > 0) {
             activityListView.setAdapter(new ActivityListAdapter(this, activityHistory));
         }
 
@@ -148,7 +155,52 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         barChart.setData(barData);
         barDataSet.setColors(ColorTemplate.JOYFUL_COLORS);
         barDataSet.setValueTextColor(Color.BLACK);
-        barDataSet.setValueTextSize(18f);
+        barDataSet.setValueTextSize(10f);
+
+        // Date Drop Down
+        //get the spinner from the xml.
+        Spinner dropdown = findViewById(R.id.dateDropDown);
+        //create a list of items for the spinner.
+        String[] items = new String[]{"Date 1", "Date 2", "Date 3"};
+        //create an adapter to describe how the items are displayed, adapters are used in several places in android.
+        //There are multiple variations of this, but this is the basic variant.
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, items);
+        //set the spinners adapter to the previously created one.
+        dropdown.setAdapter(adapter);
+        dropdown.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+
+
+
+            @Override
+            public void onItemSelected(AdapterView<?> arg0, View arg1,
+                                       int arg2, long arg3) {
+                // On selecting a spinner item
+                selectedDate = dropdown.getSelectedItem().toString();
+                System.out.println("Selected " + dropdown.getSelectedItem().toString());
+
+//                barChart.clear();
+//                barDataSet.clear();
+//                barDataSet.clear();
+//
+//                barChart = findViewById(R.id.BarChart);
+//                getEntries();
+//                barData.clearValues();
+//
+//                barDataSet = new BarDataSet(barEntries, "");
+//                barData = new BarData(barDataSet);
+//                barChart.setData(barData);
+//                barDataSet.setColors(ColorTemplate.JOYFUL_COLORS);
+//                barDataSet.setValueTextColor(Color.BLACK);
+//                barDataSet.setValueTextSize(10f);
+
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> arg0) {
+
+            }
+        });
+
 
 
         audioRecordServiceIntent = new Intent(this, AudioRecordService.class);
@@ -168,13 +220,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         barEntries = new ArrayList<>();
 
         // turn Firebase data into bar data
+
+        // Dummy data
+        Map<String, Map<String, Integer>> database = new HashMap<>();
         Map<String, Integer> data = new HashMap<>();
         data.put("SITUPS", 2);
         data.put("PUSHUPS", 3);
         data.put("JUMPING_JACKS", 10);
         data.put("SQUATS", 8);
+        database.put("Date 1", data);
+
+        Map<String, Integer> data2 = new HashMap<>();
+        data2.put("SITUPS", 22);
+        data2.put("PUSHUPS", 30);
+        data2.put("JUMPING_JACKS", 1);
+        data2.put("SQUATS", 12);
+        database.put("Date 2", data2);
+
+        Map<String, Integer> data3 = new HashMap<>();
+        data3.put("SITUPS", 5);
+        data3.put("PUSHUPS", 10);
+        data3.put("JUMPING_JACKS", 3);
+        data3.put("SQUATS", 4);
+        database.put("Date 3", data3);
+
+        Map<String, Integer> display = database.get(selectedDate);
         int count = 1;
-        for (Map.Entry<String,Integer> entry : data.entrySet()) {
+        for (Map.Entry<String, Integer> entry : data.entrySet()) {
             barEntries.add(new BarEntry(2f * count, entry.getValue()));
             count++;
         }
@@ -224,14 +296,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View v) {
 
-        switch (v.getId()){
-            case R.id.queryButton:
-                Grafana g = new Grafana();
-                String name = "test";
-                System.out.println("name = " + name);
-                g.testQuery(name);
-                break;
-
+        switch (v.getId()) {
             case R.id.connectButton:
                 progressBar.setVisibility(View.VISIBLE);
                 connectEarables();
@@ -287,24 +352,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
 
             case R.id.recordButton:
-                if(recordButton.isChecked()) {
+                if (recordButton.isChecked()) {
 
-                    if(activityName.equals("Activity")){
+                    if (activityName.equals("Activity")) {
                         recordButton.setChecked(false);
                         showAlertMessage();
-                    }else{
+                    } else {
 
                         activityObj = new Activity();
 
                         currentTime = Calendar.getInstance();
-                        int hour = currentTime.get(Calendar.HOUR_OF_DAY) ;
+                        int hour = currentTime.get(Calendar.HOUR_OF_DAY);
                         int minute = currentTime.get(Calendar.MINUTE);
                         int second = currentTime.get(Calendar.SECOND);
 
                         chronometer.setBase(SystemClock.elapsedRealtime());
                         chronometer.start();
 
-                        if(activityObj != null){
+                        if (activityObj != null) {
                             String startTime = hour + " : " + minute + " : " + second;
                             activityObj.setActivityName(activityName);
                             activityObj.setStartTime(startTime);
@@ -323,13 +388,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 } else {
 
                     currentTime = Calendar.getInstance();
-                    int hour = currentTime.get(Calendar.HOUR_OF_DAY) ;
+                    int hour = currentTime.get(Calendar.HOUR_OF_DAY);
                     int minute = currentTime.get(Calendar.MINUTE);
                     int second = currentTime.get(Calendar.SECOND);
 
                     chronometer.stop();
 
-                    if(activityObj != null){
+                    if (activityObj != null) {
                         String stopTime = hour + " : " + minute + " : " + second;
                         String duration = chronometer.getText().toString();
                         activityObj.setStopTime(stopTime);
@@ -343,8 +408,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     stopDataCollection();
                     stopService(audioRecordServiceIntent);
 
-                    if(databaseHandler != null){
-                        if(activityObj != null){
+                    if (databaseHandler != null) {
+                        if (activityObj != null) {
                             databaseHandler.addActivity(activityObj);
                             ArrayList<Activity> activityHistory = databaseHandler.getAllActivities();
                             activityListView.setAdapter(new ActivityListAdapter(this, activityHistory));
@@ -370,9 +435,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         progressBar.setVisibility(View.GONE);
 
         boolean isConnected = isESenseDeviceConnected();
-        if(isConnected){
+        if (isConnected) {
             Toast.makeText(this, "Connected", Toast.LENGTH_SHORT).show();
-        }else{
+        } else {
             sharedPrefEditor.putString("status", "disconnected");
             sharedPrefEditor.commit();
 
@@ -383,36 +448,36 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             //Toast.makeText(this, "Disconnected", Toast.LENGTH_SHORT).show();
         }
 
-        String isChecked =  sharedPreferences.getString("checked", null);
-        String status =  sharedPreferences.getString("status", null);
-        String activity =  sharedPreferences.getString("activityName", null);
+        String isChecked = sharedPreferences.getString("checked", null);
+        String status = sharedPreferences.getString("status", null);
+        String activity = sharedPreferences.getString("activityName", null);
 
-        if(activity != null){
+        if (activity != null) {
             activityName = activity;
             setActivityName();
         }
 
-        if(status == null){
+        if (status == null) {
             connectionTextView.setText("Disconnected");
             deviceNameTextView.setText(deviceName);
             statusImageView.setImageResource(R.drawable.disconnected);
-        }else if(status.equals("connected")){
+        } else if (status.equals("connected")) {
             connectionTextView.setText("Connected");
             deviceNameTextView.setText(deviceName);
             statusImageView.setImageResource(R.drawable.connected);
-        }else if(status.equals("disconnected")){
+        } else if (status.equals("disconnected")) {
             connectionTextView.setText("Disconnected");
             deviceNameTextView.setText(deviceName);
             statusImageView.setImageResource(R.drawable.disconnected);
         }
 
-        if(isChecked == null){
+        if (isChecked == null) {
             recordButton.setChecked(false);
             recordButton.setBackgroundResource(R.drawable.start);
-        }else if(isChecked.equals("on")){
+        } else if (isChecked.equals("on")) {
             recordButton.setChecked(true);
             recordButton.setBackgroundResource(R.drawable.stop);
-        }else if(isChecked.equals("off")){
+        } else if (isChecked.equals("off")) {
             recordButton.setChecked(false);
             recordButton.setBackgroundResource(R.drawable.start);
         }
@@ -432,19 +497,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Log.d(TAG, "onPause()");
     }
 
-    public void setActivityName(){
+    public void setActivityName() {
         activityTextView.setText(activityName);
 
     }
-    public void connectEarables(){
+
+    public void connectEarables() {
         eSenseManager.connect(timeout);
     }
 
-    public void startDataCollection(String activity){
+    public void startDataCollection(String activity) {
         sensorListenerManager.startDataCollection(activity);
     }
 
-    public void stopDataCollection(){
+    public void stopDataCollection() {
         sensorListenerManager.stopDataCollection();
     }
 
@@ -474,7 +540,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     boolean storageAccepted = grantResults[1] == PackageManager.PERMISSION_GRANTED;
                     boolean recordAccepted = grantResults[2] == PackageManager.PERMISSION_GRANTED;
 
-                    if (locationAccepted && storageAccepted && recordAccepted){
+                    if (locationAccepted && storageAccepted && recordAccepted) {
                         Log.d(TAG, "Permission granted");
                     } else {
                         Log.d(TAG, "Permission denied");
@@ -509,7 +575,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .show();
     }
 
-    public void showAlertMessage(){
+    public void showAlertMessage() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage("Please select an activityName !")
                 .setCancelable(false)
