@@ -40,7 +40,6 @@ import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.utils.ColorTemplate;
 
-import com.github.mikephil.charting.data.BarData;
 import com.sozolab.sumon.io.esense.esenselib.ESenseManager;
 
 import java.util.ArrayList;
@@ -85,7 +84,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ArrayList barEntries;
 
     private String selectedDate;
-
+    private Map<String, Map<String, Integer>> dummyDatabase = new HashMap<>();
 
     Calendar currentTime;
     ESenseManager eSenseManager;
@@ -161,7 +160,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //get the spinner from the xml.
         Spinner dropdown = findViewById(R.id.dateDropDown);
         //create a list of items for the spinner.
-        String[] items = new String[]{"Date 1", "Date 2", "Date 3"};
+
+        String[] items = dummyDatabase.keySet().toArray(new String[dummyDatabase.size()]);
         //create an adapter to describe how the items are displayed, adapters are used in several places in android.
         //There are multiple variations of this, but this is the basic variant.
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, items);
@@ -222,29 +222,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // turn Firebase data into bar data
 
         // Dummy data
-        Map<String, Map<String, Integer>> database = new HashMap<>();
         Map<String, Integer> data = new HashMap<>();
         data.put("SITUPS", 2);
         data.put("PUSHUPS", 3);
         data.put("JUMPING_JACKS", 10);
         data.put("SQUATS", 8);
-        database.put("Date 1", data);
+        dummyDatabase.put("Date 1", data);
 
         Map<String, Integer> data2 = new HashMap<>();
         data2.put("SITUPS", 22);
         data2.put("PUSHUPS", 30);
         data2.put("JUMPING_JACKS", 1);
         data2.put("SQUATS", 12);
-        database.put("Date 2", data2);
+        dummyDatabase.put("Date 2", data2);
 
         Map<String, Integer> data3 = new HashMap<>();
         data3.put("SITUPS", 5);
         data3.put("PUSHUPS", 10);
         data3.put("JUMPING_JACKS", 3);
         data3.put("SQUATS", 4);
-        database.put("Date 3", data3);
+        dummyDatabase.put("Date 3", data3);
 
-        Map<String, Integer> display = database.get(selectedDate);
+        Map<String, Integer> display = dummyDatabase.get(selectedDate);
         int count = 1;
         for (Map.Entry<String, Integer> entry : data.entrySet()) {
             barEntries.add(new BarEntry(2f * count, entry.getValue()));
