@@ -33,6 +33,7 @@ import com.sozolab.sumon.counter.utils.ActivitySubscription;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 
 import static android.Manifest.permission.RECORD_AUDIO;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
@@ -40,9 +41,9 @@ import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
-    private String TAG = "Esense";
+    private String TAG = "MainActivity";
     private String deviceName = "eSense-1625";  // "eSense-0598"
-    private String activityName = "Activity";
+    private static String activityName = "Activity";
     private int timeout = 30000;
 
     private Button connectButton;
@@ -53,13 +54,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button walkButton;
     private Button stayButton;
     private Button speakWalkButton;
-    private ListView activityListView;
+    private static ListView activityListView;
     private Chronometer chronometer;
     private ToggleButton recordButton;
 
     private TextView connectionTextView;
     private TextView deviceNameTextView;
-    private TextView activityTextView;
+    private static TextView activityTextView;
     private ImageView statusImageView;
     private ProgressBar progressBar;
     private SharedPreferences sharedPreferences;
@@ -67,9 +68,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     Calendar currentTime;
     ESenseManager eSenseManager;
-    Activity activityObj;
+    static Activity activityObj;
     Intent audioRecordServiceIntent;
-    DatabaseHandler databaseHandler;
+    static DatabaseHandler databaseHandler;
     FireStoreHandler fireStoreHandler;
     SensorListenerManager sensorListenerManager;
     PhoneSensorListenerManager phoneSensorListenerManager;
@@ -77,6 +78,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     ConnectionListenerManager connectionListenerManager;
     private static final int PERMISSION_REQUEST_CODE = 200;
 
+    static HashMap<String,Integer> activitySummary;
+    private static Context context_;
+
+    public static Context getContext(){
+
+        return context_;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -120,7 +128,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         // create firestore instance
         fireStoreHandler = new FireStoreHandler();
-
+        context_ = getApplicationContext();
         databaseHandler = new DatabaseHandler(this);
         activityListView = (ListView) findViewById(R.id.activityListView);
         ArrayList<Activity> activityHistory = databaseHandler.getAllActivities();
@@ -131,6 +139,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         audioRecordServiceIntent = new Intent(this, AudioRecordService.class);
 
         // Adding activity counter
+        activitySummary = new HashMap<String, Integer>();
         activitySubscription = new ActivitySubscription(MainActivity::handleActivity);
         sensorListenerManager = new SensorListenerManager(this, activitySubscription);
         phoneSensorListenerManager = new PhoneSensorListenerManager(this, activitySubscription);
@@ -147,7 +156,47 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public static boolean handleActivity(String activity) {
+        Log.d("handleActivity", "Count Activity:" + activity);
+        if (activity != null) {
+            if(activitySummary.get(activity) == null) {
+                activitySummary.put(activity, 0);
+            }
+            int counter = activitySummary.get(activity) + 1;
+            Log.d("handleActivity", "current count: " + counter +  ", activity: " + activity);
+            activitySummary.put(activity, counter);
+            activityName = activity;
+        };
         return true;
+    }
+
+    public static void updateCounter(Integer counter, Activity activityObj) {
+//        currentTime = Calendar.getInstance();
+//        int hour = currentTime.get(Calendar.HOUR_OF_DAY) ;
+//        int minute = currentTime.get(Calendar.MINUTE);
+//        int second = currentTime.get(Calendar.SECOND);
+//
+//        chronometer.stop();
+
+        if(activityObj != null){
+            String stopTime = "Test";
+            String duration = "Test";
+            activityObj.setStopTime(stopTime);
+            activityObj.setDuration(duration);
+            activityObj.setCounter(counter);
+        }
+
+        if(databaseHandler != null){
+            if(activityObj != null){
+                databaseHandler.addActivity(activityObj);
+                ArrayList<Activity> activityHistory = databaseHandler.getAllActivities();
+                activityListView.setAdapter(new ActivityListAdapter(getContext(), activityHistory));
+
+                for (Activity activity : activityHistory) {
+                    String activityLog = "Activity : " + activity.getActivityName() + ", Counter: " + activity.getCounter();
+                    Log.d("handleActivity", activityLog);
+                }
+            }
+        }
     }
 
     public static boolean isESenseDeviceConnected() {
@@ -390,8 +439,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     public void setActivityName(){
         activityTextView.setText(activityName);
-
     }
+
     public void connectEarables(){
         eSenseManager.connect(timeout);
     }

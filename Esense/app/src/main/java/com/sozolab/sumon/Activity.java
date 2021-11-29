@@ -6,6 +6,7 @@ public class Activity {
     private String startTime;
     private String stopTime;
     private String duration;
+    private Integer counter;
 
     public Activity(){
 
@@ -16,6 +17,7 @@ public class Activity {
         this.startTime = startTime;
         this.stopTime = stopTime;
         this.duration = duration;
+        this.counter = 0;
     }
 
     public String getActivityName() {
@@ -48,5 +50,13 @@ public class Activity {
 
     public void setDuration(String duration) {
         this.duration = duration;
+    }
+
+    public Integer getCounter() {
+        return counter;
+    }
+
+    public void setCounter(Integer counter) {
+        this.counter = counter;
     }
 }

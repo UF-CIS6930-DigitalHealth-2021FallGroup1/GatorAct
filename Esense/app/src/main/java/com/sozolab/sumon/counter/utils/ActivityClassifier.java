@@ -1,5 +1,7 @@
 package com.sozolab.sumon.counter.utils;
 
+import android.util.Log;
+
 import com.sozolab.sumon.counter.model.CombinedSensorEvents;
 import com.sozolab.sumon.counter.model.SensorValues;
 import com.sozolab.sumon.counter.model.Checkpoints;
@@ -12,7 +14,7 @@ import java.util.TimerTask;
 import java.util.function.Function;
 
 public class ActivityClassifier {
-    
+    private final String TAG = "ActivityClassifier";
     private int eSenseWindowSize = 50;
     private double eSenseLowpassThreshold = 0.1;
     private SensorValues eSenseMovingAverage;
@@ -28,6 +30,9 @@ public class ActivityClassifier {
     private List<Checkpoints> checkpoints; // List<List<dynamic>>: [SV, SV/double] -> List<Checkpoints>: [SV, SV, double]
     private Timer inactivityTimer;
     public Function<String, Boolean> onActivity; // onActivity.apply(String)
+
+    // Task Period
+    private long timerDuration = 3000L;
 
     public ActivityClassifier(Function<String, Boolean> onAct){
         onActivity = onAct;
@@ -45,7 +50,7 @@ public class ActivityClassifier {
         }else if(phoneMovingAverage.getX() > phoneMovingAverage.getY() && phoneMovingAverage.getY() > -phoneMovingAverage.getZ()){
             bodyPosture = "KNEES_BENT";
         }else{
-            bodyPosture = null;
+            bodyPosture = "";
         }
     }
 
@@ -100,7 +105,7 @@ public class ActivityClassifier {
         if(inactivityTimer != null)
             inactivityTimer.cancel();
         inactivityTimer = new Timer("Timer");
-        inactivityTimer.scheduleAtFixedRate(repeatedResetCkpts, 500L, 3000L);
+        inactivityTimer.scheduleAtFixedRate(repeatedResetCkpts(), 500L, timerDuration);
         Checkpoints ckpt = new Checkpoints(eSenseMovingAverage, new SensorValues(0, 0, 0), 0);
         checkpoints.add(ckpt);
     }
@@ -109,7 +114,7 @@ public class ActivityClassifier {
         if(inactivityTimer != null)
             inactivityTimer.cancel();
         inactivityTimer = new Timer("Timer");
-        inactivityTimer.scheduleAtFixedRate(repeatedResetCkpts, 500L, 3000L);
+        inactivityTimer.scheduleAtFixedRate(repeatedResetCkpts(), 500L, timerDuration);
         Checkpoints ckpt = new Checkpoints(eSenseMovingAverage, new SensorValues(0, 0, 0), data);
         checkpoints.add(ckpt);
     }
@@ -118,7 +123,7 @@ public class ActivityClassifier {
         if(inactivityTimer != null)
             inactivityTimer.cancel();
         inactivityTimer = new Timer("Timer");
-        inactivityTimer.scheduleAtFixedRate(repeatedResetCkpts, 500L, 3000L);
+        inactivityTimer.scheduleAtFixedRate(repeatedResetCkpts(), 500L, timerDuration);
         Checkpoints ckpt = new Checkpoints(eSenseMovingAverage, data, 0);
         checkpoints.add(ckpt);
     }
@@ -130,16 +135,20 @@ public class ActivityClassifier {
     //     }
     // }
 
-    TimerTask repeatedResetCkpts = new TimerTask(){
-        public void run(){
-            // cancel();
-            checkpoints.clear();
-            compatibleActivities.clear();
-            if(currentActivity != "NEUTRAL"){
-                submitActivity("NEUTRAL");
+    private TimerTask repeatedResetCkpts() {
+        return new TimerTask(){
+            @Override
+            public void run(){
+                Log.d(TAG, "run repeatedResetCkpts");
+                // cancel();
+                checkpoints.clear();
+                compatibleActivities.clear();
+                if(currentActivity != "NEUTRAL"){
+                    submitActivity("NEUTRAL");
+                }
             }
-        }
-    };
+        };
+    }
     
     private void resetCheckpoints(){
         // timer.cancel();
@@ -154,7 +163,9 @@ public class ActivityClassifier {
         if(compatibleActivities.isEmpty()){
             resetCheckpoints();
         }
+
         if(checkpoints.isEmpty()){
+            Log.d(TAG, bodyPosture);
             switch(bodyPosture){
                 case "KNEES_BENT":
                     compatibleActivities.add("SQUATS");
