@@ -165,7 +165,7 @@ public class ActivityClassifier {
         }
 
         if(checkpoints.isEmpty()){
-            Log.d(TAG, bodyPosture);
+            Log.d(TAG, "Add activity according to bodyPosture:"+ bodyPosture);
             switch(bodyPosture){
                 case "KNEES_BENT":
                     compatibleActivities.add("SQUATS");
@@ -214,22 +214,42 @@ public class ActivityClassifier {
                 }
             }
             if(compatibleActivities.contains("PUSHUPS")){
+                Log.d(TAG, "checkPointSize: " + checkpoints.size() + ", phoneMovingAverage.getZ():" + phoneMovingAverage.getZ());
                 if(phoneMovingAverage.getZ() > -0.4){
+                    Log.d(TAG, "remove PUSHUPS");
                     compatibleActivities.remove("PUSHUPS");
                 }else if(checkpoints.size() == 1){
+                    Log.d(TAG, "PUSHUPS Start");
                     prepNextCheckpoint(currentDelta);
-                }else if(checkpoints.size() == 2){
-                    if(Math.signum(prevDeltaType1.getY()) != Math.signum(currentDelta.getY()) && Math.abs(currentDelta.getY() - currentDelta.getX()) / 2 > 0.3) {
+                }
+                else if(checkpoints.size() == 2){
+                    Log.d(TAG, "PUSHUPS DOWN");
+                    if(phoneMovingAverage.getZ() < -0.4) {
                         prepNextCheckpoint(currentDelta);
                     }
-                }else if(checkpoints.size() == 3){
-                    if(Math.signum(prevDeltaType1.getY()) != Math.signum(currentDelta.getY()) && Math.abs(currentDelta.getY() - currentDelta.getX()) / 2 > 0.3) {
+//                    if(Math.signum(prevDeltaType1.getY()) != Math.signum(currentDelta.getY()) && Math.abs(currentDelta.getY() - currentDelta.getX()) / 2 > 0.3) {
+//                        prepNextCheckpoint(currentDelta);
+//                    }
+                }
+                else if(checkpoints.size() == 3) {
+                    Log.d(TAG, "Finish PUSHUPS?");
+//                    if(Math.signum(prevDeltaType1.getX()) != Math.signum(currentDelta.getX()) && Math.abs(currentDelta.getX()) > 0.2) {
+                    if(phoneMovingAverage.getZ() < -0.4) {
+                        Log.d(TAG, "ADD PUSHUPS");
                         submitActivity("PUSHUPS");
                         checkpoints.remove(checkpoints.size()-1);
                         checkpoints.remove(checkpoints.size()-1);
                         prepNextCheckpoint(currentDelta);
                     }
                 }
+//                else if(checkpoints.size() == 3){
+//                    if(Math.signum(prevDeltaType1.getY()) != Math.signum(currentDelta.getY()) && Math.abs(currentDelta.getY() - currentDelta.getX()) / 2 > 0.3) {
+//                        submitActivity("PUSHUPS");
+//                        checkpoints.remove(checkpoints.size()-1);
+//                        checkpoints.remove(checkpoints.size()-1);
+//                        prepNextCheckpoint(currentDelta);
+//                    }
+//                }
             }
             if(compatibleActivities.contains("SQUATS")){
                 if(checkpoints.size() == 1) {
