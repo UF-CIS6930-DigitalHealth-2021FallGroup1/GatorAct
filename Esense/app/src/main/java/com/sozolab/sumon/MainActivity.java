@@ -1,6 +1,6 @@
 package com.sozolab.sumon;
 
-import android.graphics.Color;
+
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothHeadset;
 import android.content.Context;
@@ -11,6 +11,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.SystemClock;
 
+import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.appcompat.app.ActionBar;
@@ -40,11 +41,22 @@ import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.utils.ColorTemplate;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentChange;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.sozolab.sumon.io.esense.esenselib.ESenseManager;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static android.Manifest.permission.RECORD_AUDIO;
@@ -78,23 +90,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private SharedPreferences sharedPreferences;
     private SharedPreferences.Editor sharedPrefEditor;
 
-    private BarChart barChart;
-    private BarData barData;
-    private BarDataSet barDataSet;
-    private ArrayList barEntries;
+    private float[] activityValues;
 
-    private String selectedDate;
-    private Map<String, Map<String, Integer>> dummyDatabase = new HashMap<>();
+//    public FirebaseFirestore firestoreDB = FirebaseFirestore.getInstance();
 
     Calendar currentTime;
     ESenseManager eSenseManager;
     Activity activityObj;
     Intent audioRecordServiceIntent;
     DatabaseHandler databaseHandler;
+    FirebaseFirestore db;
     FireStoreHandler fireStoreHandler;
     SensorListenerManager sensorListenerManager;
     ConnectionListenerManager connectionListenerManager;
     private static final int PERMISSION_REQUEST_CODE = 200;
+
+    Map<String, Object> map;
+    String tempDate = "2021.11.30";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -136,6 +148,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         chronometer = (Chronometer) findViewById(R.id.chronometer);
 
+
         // create firestore instance
         fireStoreHandler = new FireStoreHandler();
 
@@ -146,60 +159,44 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             activityListView.setAdapter(new ActivityListAdapter(this, activityHistory));
         }
 
-        // BarChart
-        barChart = findViewById(R.id.BarChart);
-        getEntries();
-        barDataSet = new BarDataSet(barEntries, "");
-        barData = new BarData(barDataSet);
-        barChart.setData(barData);
-        barDataSet.setColors(ColorTemplate.JOYFUL_COLORS);
-        barDataSet.setValueTextColor(Color.BLACK);
-        barDataSet.setValueTextSize(10f);
-
-        // Date Drop Down
-        //get the spinner from the xml.
-        Spinner dropdown = findViewById(R.id.dateDropDown);
-        //create a list of items for the spinner.
-
-        String[] items = dummyDatabase.keySet().toArray(new String[dummyDatabase.size()]);
-        //create an adapter to describe how the items are displayed, adapters are used in several places in android.
-        //There are multiple variations of this, but this is the basic variant.
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, items);
-        //set the spinners adapter to the previously created one.
-        dropdown.setAdapter(adapter);
-        dropdown.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-
-
-
+        // Firestore collection
+        db = FirebaseFirestore.getInstance();
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("dummyData").document(tempDate).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
-            public void onItemSelected(AdapterView<?> arg0, View arg1,
-                                       int arg2, long arg3) {
-                // On selecting a spinner item
-                selectedDate = dropdown.getSelectedItem().toString();
-                System.out.println("Selected " + dropdown.getSelectedItem().toString());
-
-//                barChart.clear();
-//                barDataSet.clear();
-//                barDataSet.clear();
-//
-//                barChart = findViewById(R.id.BarChart);
-//                getEntries();
-//                barData.clearValues();
-//
-//                barDataSet = new BarDataSet(barEntries, "");
-//                barData = new BarData(barDataSet);
-//                barChart.setData(barData);
-//                barDataSet.setColors(ColorTemplate.JOYFUL_COLORS);
-//                barDataSet.setValueTextColor(Color.BLACK);
-//                barDataSet.setValueTextSize(10f);
-
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> arg0) {
-
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                if (documentSnapshot.exists()) {
+                    System.out.println("TEST BEGIN");
+                    map = documentSnapshot.getData();
+                    activityValues = new float[map.size()];
+                    activityValues[0] = (Float.parseFloat((String) map.get("SQUATS")));
+                    activityValues[1] = (Float.parseFloat((String) map.get("SITUPS")));
+                    activityValues[2] = (Float.parseFloat((String) map.get("JUMPING_JACKS")));
+                    activityValues[3] = (Float.parseFloat((String) map.get("PUSHUPS")));
+                    System.out.println(map.get("SQUATS"));
+                    System.out.println("TEST END");
+                }
+                else {
+                    System.out.println("NO FILE");
+                }
             }
         });
+
+        findViewById(R.id.visualizeButton).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(getApplicationContext(), VisualizeData.class);
+                for (float f:activityValues) {
+                    System.out.println(f);
+                }
+                if (activityValues != null) {
+                    System.out.println("activity has values");
+                    i.putExtra("values", activityValues);
+                }
+                startActivity(i);
+            }
+        });
+
 
 
 
@@ -216,47 +213,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private void getEntries() {
-        barEntries = new ArrayList<>();
-
-        // turn Firebase data into bar data
-
-        // Dummy data
-        Map<String, Integer> data = new HashMap<>();
-        data.put("SITUPS", 2);
-        data.put("PUSHUPS", 3);
-        data.put("JUMPING_JACKS", 10);
-        data.put("SQUATS", 8);
-        dummyDatabase.put("Date 1", data);
-
-        Map<String, Integer> data2 = new HashMap<>();
-        data2.put("SITUPS", 22);
-        data2.put("PUSHUPS", 30);
-        data2.put("JUMPING_JACKS", 1);
-        data2.put("SQUATS", 12);
-        dummyDatabase.put("Date 2", data2);
-
-        Map<String, Integer> data3 = new HashMap<>();
-        data3.put("SITUPS", 5);
-        data3.put("PUSHUPS", 10);
-        data3.put("JUMPING_JACKS", 3);
-        data3.put("SQUATS", 4);
-        dummyDatabase.put("Date 3", data3);
-
-        Map<String, Integer> display = dummyDatabase.get(selectedDate);
-        int count = 1;
-        for (Map.Entry<String, Integer> entry : data.entrySet()) {
-            barEntries.add(new BarEntry(2f * count, entry.getValue()));
-            count++;
-        }
-
-//        barEntries.add(new BarEntry(2f, 0));
-//        barEntries.add(new BarEntry(4f, 1));
-//        barEntries.add(new BarEntry(6f, 1));
-//        barEntries.add(new BarEntry(8f, 3));
-//        barEntries.add(new BarEntry(7f, 4));
-//        barEntries.add(new BarEntry(3f, 3));
-    }
 
     public static boolean isESenseDeviceConnected() {
         BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -530,7 +486,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, String permissions[],
+                                           int[] grantResults) {
         switch (requestCode) {
             case PERMISSION_REQUEST_CODE:
                 if (grantResults.length > 0) {
