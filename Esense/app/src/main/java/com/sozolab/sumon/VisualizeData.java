@@ -55,7 +55,6 @@ public class VisualizeData extends AppCompatActivity {
             return;
         }
         barEntries = new ArrayList<BarEntry>();
-        System.out.println("VISUALIZE");
         barEntries.add(new BarEntry(0, date[0]));
         barEntries.add(new BarEntry(2f, date[1]));
         barEntries.add(new BarEntry(4f, date[2]));

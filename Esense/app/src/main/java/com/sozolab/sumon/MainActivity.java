@@ -175,10 +175,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     activityValues[3] = (Float.parseFloat((String) map.get("PUSHUPS")));
                     System.out.println(map.get("SQUATS"));
                     System.out.println("TEST END");
-                }
-                else {
+                } else {
                     System.out.println("NO FILE");
                 }
+            }
+        });
+
+
+        // Drop down
+        Spinner dropdown = findViewById(R.id.dropdown);
+        String[] items = new String[]{"2021.11.29", "2021.11.30"};
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, items);
+        dropdown.setAdapter(adapter);
+        dropdown.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                tempDate = dropdown.getSelectedItem().toString();
+                Toast.makeText(MainActivity.this, parent.getSelectedItem().toString(), Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
             }
         });
 
@@ -186,7 +204,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void onClick(View v) {
                 Intent i = new Intent(getApplicationContext(), VisualizeData.class);
-                for (float f:activityValues) {
+                for (float f : activityValues) {
                     System.out.println(f);
                 }
                 if (activityValues != null) {
@@ -196,8 +214,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 startActivity(i);
             }
         });
-
-
 
 
         audioRecordServiceIntent = new Intent(this, AudioRecordService.class);
