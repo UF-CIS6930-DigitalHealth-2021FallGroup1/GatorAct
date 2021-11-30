@@ -278,12 +278,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             case R.id.recordButton:
                 if(recordButton.isChecked()) {
-
                     if(activityName.equals("Activity")){
                         recordButton.setChecked(false);
                         showAlertMessage();
-                    }else{
-
+                    }
+                    else{
                         activityObj = new Activity();
 
                         currentTime = Calendar.getInstance();
@@ -343,6 +342,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     if(databaseHandler != null){
                         if(activityObj != null){
                             databaseHandler.addActivity(activityObj);
+
                             ArrayList<Activity> activityHistory = databaseHandler.getAllActivities();
                             activityListView.setAdapter(new ActivityListAdapter(this, activityHistory));
 
@@ -355,9 +355,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
 
                     activityObj = null;
-
-                    // reset Counter
-                    counterNum = 0;
+                    activitySummary.clear();
                 }
                 break;
         }

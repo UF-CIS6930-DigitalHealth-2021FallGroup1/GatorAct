@@ -140,7 +140,6 @@ public class ActivityClassifier {
         return new TimerTask(){
             @Override
             public void run(){
-                Log.d(TAG, "run repeatedResetCkpts");
                 // cancel();
                 checkpoints.clear();
                 compatibleActivities.clear();
