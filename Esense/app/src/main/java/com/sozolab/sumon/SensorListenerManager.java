@@ -194,6 +194,9 @@ public class SensorListenerManager implements ESenseSensorListener {
             case "Staying":
                 index = 6;
                 break;
+            case "Counter":
+                index = 7;
+                break;
         }
 
         return index;

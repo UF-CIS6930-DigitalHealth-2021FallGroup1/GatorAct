@@ -34,6 +34,7 @@ import com.sozolab.sumon.counter.utils.ActivitySubscription;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.Map;
 
 import static android.Manifest.permission.RECORD_AUDIO;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
@@ -43,7 +44,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private String TAG = "MainActivity";
     private String deviceName = "eSense-1625";  // "eSense-0598"
-    private static String activityName = "Activity";
+    private String activityName = "Activity";
+
     private int timeout = 30000;
 
     private Button connectButton;
@@ -54,6 +56,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button walkButton;
     private Button stayButton;
     private Button speakWalkButton;
+    private Button counterButton;
     private static ListView activityListView;
     private Chronometer chronometer;
     private ToggleButton recordButton;
@@ -78,11 +81,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     ConnectionListenerManager connectionListenerManager;
     private static final int PERMISSION_REQUEST_CODE = 200;
 
+    // Adding "Counter" activity
     static HashMap<String,Integer> activitySummary;
     private static Context context_;
+    private static Integer counterNum;
 
     public static Context getContext(){
-
         return context_;
     }
 
@@ -108,6 +112,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         walkButton = (Button) findViewById(R.id.walkButton);
         stayButton = (Button) findViewById(R.id.stayButton);
         speakWalkButton = (Button) findViewById(R.id.speak_walk_button);
+        counterButton = (Button) findViewById(R.id.counter_button);
 
         recordButton.setOnClickListener(this);
         connectButton.setOnClickListener(this);
@@ -118,6 +123,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         walkButton.setOnClickListener(this);
         stayButton.setOnClickListener(this);
         speakWalkButton.setOnClickListener(this);
+        counterButton.setOnClickListener(this);
 
         statusImageView = (ImageView) findViewById(R.id.statusImage);
         connectionTextView = (TextView) findViewById(R.id.connectionTV);
@@ -156,47 +162,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public static boolean handleActivity(String activity) {
-        Log.d("handleActivity", "Count Activity:" + activity);
+        Log.d("handleActivity", "Current Activity:" + activity);
         if (activity != null) {
             if(activitySummary.get(activity) == null) {
                 activitySummary.put(activity, 0);
             }
-            int counter = activitySummary.get(activity) + 1;
-            Log.d("handleActivity", "current count: " + counter +  ", activity: " + activity);
-            activitySummary.put(activity, counter);
-            activityName = activity;
+            if(activity != "NEUTRAL" && activityObj.getActivityName() == "Counter") {
+                int currentCount = activitySummary.get(activity) + 1;
+                activitySummary.put(activity, currentCount);
+                activityObj.setCounter(currentCount);
+                Log.d("handleActivity", "counterNum: " + activityObj.getCounter() + " on counting activity: " + activity);
+            }
         };
         return true;
-    }
-
-    public static void updateCounter(Integer counter, Activity activityObj) {
-//        currentTime = Calendar.getInstance();
-//        int hour = currentTime.get(Calendar.HOUR_OF_DAY) ;
-//        int minute = currentTime.get(Calendar.MINUTE);
-//        int second = currentTime.get(Calendar.SECOND);
-//
-//        chronometer.stop();
-
-        if(activityObj != null){
-            String stopTime = "Test";
-            String duration = "Test";
-            activityObj.setStopTime(stopTime);
-            activityObj.setDuration(duration);
-            activityObj.setCounter(counter);
-        }
-
-        if(databaseHandler != null){
-            if(activityObj != null){
-                databaseHandler.addActivity(activityObj);
-                ArrayList<Activity> activityHistory = databaseHandler.getAllActivities();
-                activityListView.setAdapter(new ActivityListAdapter(getContext(), activityHistory));
-
-                for (Activity activity : activityHistory) {
-                    String activityLog = "Activity : " + activity.getActivityName() + ", Counter: " + activity.getCounter();
-                    Log.d("handleActivity", activityLog);
-                }
-            }
-        }
     }
 
     public static boolean isESenseDeviceConnected() {
@@ -291,6 +269,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 setActivityName();
                 break;
 
+            case R.id.counter_button:
+                activityName = "Counter";
+                sharedPrefEditor.putString("activityName", activityName);
+                sharedPrefEditor.commit();
+                setActivityName();
+                break;
+
             case R.id.recordButton:
                 if(recordButton.isChecked()) {
 
@@ -348,6 +333,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     stopDataCollection();
                     stopService(audioRecordServiceIntent);
 
+                    Log.d(TAG, "start print activitySummary");
+                    for (Map.Entry<String,Integer> entry : activitySummary.entrySet()) {
+                        String key = entry.getKey();
+                        Integer value = entry.getValue();
+                        Log.d(TAG, "activitySummary key: " + key + ", value: " + value);
+                    }
+
                     if(databaseHandler != null){
                         if(activityObj != null){
                             databaseHandler.addActivity(activityObj);
@@ -356,13 +348,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                             for (Activity activity : activityHistory) {
                                 String activityLog = "Activity : " + activity.getActivityName() + " , Start Time : " + activity.getStartTime()
-                                        + " , Stop Time : " + activity.getStopTime() + " , Duration : " + activity.getDuration();
+                                        + " , Stop Time : " + activity.getStopTime() + " , Duration : " + activity.getDuration() + ", Counter: " + activity.getCounter();
                                 Log.d(TAG, activityLog);
                             }
                         }
                     }
 
                     activityObj = null;
+
+                    // reset Counter
+                    counterNum = 0;
                 }
                 break;
         }

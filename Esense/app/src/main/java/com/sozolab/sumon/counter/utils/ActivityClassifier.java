@@ -33,6 +33,7 @@ public class ActivityClassifier {
 
     // Task Period
     private long timerDuration = 3000L;
+    private long timeDelay = 500L;
 
     public ActivityClassifier(Function<String, Boolean> onAct){
         onActivity = onAct;
@@ -105,7 +106,7 @@ public class ActivityClassifier {
         if(inactivityTimer != null)
             inactivityTimer.cancel();
         inactivityTimer = new Timer("Timer");
-        inactivityTimer.scheduleAtFixedRate(repeatedResetCkpts(), 500L, timerDuration);
+        inactivityTimer.scheduleAtFixedRate(repeatedResetCkpts(), timeDelay, timerDuration);
         Checkpoints ckpt = new Checkpoints(eSenseMovingAverage, new SensorValues(0, 0, 0), 0);
         checkpoints.add(ckpt);
     }
@@ -114,7 +115,7 @@ public class ActivityClassifier {
         if(inactivityTimer != null)
             inactivityTimer.cancel();
         inactivityTimer = new Timer("Timer");
-        inactivityTimer.scheduleAtFixedRate(repeatedResetCkpts(), 500L, timerDuration);
+        inactivityTimer.scheduleAtFixedRate(repeatedResetCkpts(), timeDelay, timerDuration);
         Checkpoints ckpt = new Checkpoints(eSenseMovingAverage, new SensorValues(0, 0, 0), data);
         checkpoints.add(ckpt);
     }
@@ -123,7 +124,7 @@ public class ActivityClassifier {
         if(inactivityTimer != null)
             inactivityTimer.cancel();
         inactivityTimer = new Timer("Timer");
-        inactivityTimer.scheduleAtFixedRate(repeatedResetCkpts(), 500L, timerDuration);
+        inactivityTimer.scheduleAtFixedRate(repeatedResetCkpts(), timeDelay, timerDuration);
         Checkpoints ckpt = new Checkpoints(eSenseMovingAverage, data, 0);
         checkpoints.add(ckpt);
     }

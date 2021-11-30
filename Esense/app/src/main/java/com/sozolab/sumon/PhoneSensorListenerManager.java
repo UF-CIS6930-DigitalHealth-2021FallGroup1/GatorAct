@@ -60,8 +60,6 @@ public class PhoneSensorListenerManager implements SensorEventListener {
     public void onSensorChanged(SensorEvent evt) {
         if(dataCollecting) {
             if (evt.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-//                String sensorData = "Accel x: " + evt.values[0] + ", y: " + evt.values[1] + ", z: " + evt.values[2];
-//                Log.d(TAG, sensorData);
                 this.activitySubscription.updatePhoneAcc(evt.values[0], evt.values[1], evt.values[2]);
             }
         }

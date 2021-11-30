@@ -6,18 +6,18 @@ public class Activity {
     private String startTime;
     private String stopTime;
     private String duration;
-    private Integer counter;
+    private Integer counterNum;
 
     public Activity(){
 
     }
 
-    public Activity(String activityName, String startTime, String stopTime, String duration){
+    public Activity(String activityName, String startTime, String stopTime, String duration, Integer counterNum){
         this.activityName = activityName;
         this.startTime = startTime;
         this.stopTime = stopTime;
         this.duration = duration;
-        this.counter = 0;
+        this.counterNum = counterNum;
     }
 
     public String getActivityName() {
@@ -52,11 +52,7 @@ public class Activity {
         this.duration = duration;
     }
 
-    public Integer getCounter() {
-        return counter;
-    }
+    public Integer getCounter() { return counterNum; }
 
-    public void setCounter(Integer counter) {
-        this.counter = counter;
-    }
+    public void setCounter(Integer counterNum) { this.counterNum = counterNum; }
 }
