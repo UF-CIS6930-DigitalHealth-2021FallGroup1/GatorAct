@@ -54,6 +54,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 import com.sozolab.sumon.io.esense.esenselib.ESenseManager;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
@@ -161,10 +162,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         // Firestore collection
         db = FirebaseFirestore.getInstance();
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection("dummyData").document(tempDate).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
             public void onSuccess(DocumentSnapshot documentSnapshot) {
+                System.out.println("date "+tempDate);
                 if (documentSnapshot.exists()) {
                     System.out.println("TEST BEGIN");
                     map = documentSnapshot.getData();
@@ -182,9 +183,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
 
 
+
+        List<String> list = new ArrayList<>();
+        String[] items = new String[]{"2021.11.29", "2021.11.30"};
+        db.collection("dummyData").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()) {
+                    for (QueryDocumentSnapshot document : task.getResult()) {
+                        list.add(document.getId());
+                    }
+                    Log.d(TAG, list.toString());
+                } else {
+                    Log.d(TAG, "Error getting documents: ", task.getException());
+                }
+            }
+        });
+
         // Drop down
         Spinner dropdown = findViewById(R.id.dropdown);
-        String[] items = new String[]{"2021.11.29", "2021.11.30"};
+//        String[] items = list.toArray(new String[list.size()]);
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, items);
         dropdown.setAdapter(adapter);
         dropdown.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -203,6 +221,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         findViewById(R.id.visualizeButton).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                updateActivityValues();
                 Intent i = new Intent(getApplicationContext(), VisualizeData.class);
                 for (float f : activityValues) {
                     System.out.println(f);
@@ -227,6 +246,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         } else {
             Log.d(TAG, "Permission already granted..");
         }
+    }
+
+    private void updateActivityValues() {
+        db.collection("dummyData").document(tempDate).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                System.out.println("date "+tempDate);
+                if (documentSnapshot.exists()) {
+                    System.out.println("TEST BEGIN");
+                    map = documentSnapshot.getData();
+                    activityValues = new float[map.size()];
+                    activityValues[0] = (Float.parseFloat((String) map.get("SQUATS")));
+                    activityValues[1] = (Float.parseFloat((String) map.get("SITUPS")));
+                    activityValues[2] = (Float.parseFloat((String) map.get("JUMPING_JACKS")));
+                    activityValues[3] = (Float.parseFloat((String) map.get("PUSHUPS")));
+                    System.out.println(map.get("SQUATS"));
+                    System.out.println("TEST END");
+                } else {
+                    System.out.println("NO FILE");
+                }
+            }
+        });
     }
 
 

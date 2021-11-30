@@ -8,9 +8,13 @@ import android.view.View;
 
 import android.graphics.Color;
 import com.github.mikephil.charting.charts.BarChart;
+import com.github.mikephil.charting.components.Description;
+import com.github.mikephil.charting.components.Legend;
+import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
+import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
 import com.github.mikephil.charting.utils.ColorTemplate;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.CollectionReference;
@@ -35,9 +39,21 @@ public class VisualizeData extends AppCompatActivity {
         BarChart barChart = findViewById(R.id.BarChart);
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
-
             getEntries(extras.getFloatArray("values"));
             System.out.println("barEntries.size() = " + barEntries.size());
+            String[] labels = {"SQUATS", "SITUPS", "JUMPING JACKS", "PUSHUPS"};
+            barChart.getXAxis().setValueFormatter(new IndexAxisValueFormatter(labels));
+            Legend legend = barChart.getLegend();
+            XAxis xAxis = barChart.getXAxis();
+            //change the position of x-axis to the bottom
+            xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+
+            xAxis.setGranularity(1f);
+
+            Description description = new Description();
+            description.setEnabled(false);
+            barChart.setDescription(description);
+
             BarDataSet barDataSet = new BarDataSet(barEntries, "Activities");
             BarData barData = new BarData(barDataSet);
             barChart.setData(barData);
@@ -56,9 +72,9 @@ public class VisualizeData extends AppCompatActivity {
         }
         barEntries = new ArrayList<BarEntry>();
         barEntries.add(new BarEntry(0, date[0]));
-        barEntries.add(new BarEntry(2f, date[1]));
-        barEntries.add(new BarEntry(4f, date[2]));
-        barEntries.add(new BarEntry(6f, date[3]));
+        barEntries.add(new BarEntry(1f, date[1]));
+        barEntries.add(new BarEntry(2f, date[2]));
+        barEntries.add(new BarEntry(3f, date[3]));
         // doesn't quite work
     }
 //        db.collection("dummyData")
