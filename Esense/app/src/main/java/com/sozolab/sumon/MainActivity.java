@@ -54,12 +54,14 @@ import com.google.firebase.firestore.QuerySnapshot;
 import com.sozolab.sumon.io.esense.esenselib.ESenseManager;
 import com.sozolab.sumon.counter.utils.ActivitySubscription;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
 import static android.Manifest.permission.RECORD_AUDIO;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
@@ -96,8 +98,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private float[] activityValues;
 
-//    public FirebaseFirestore firestoreDB = FirebaseFirestore.getInstance();
-
     Calendar currentTime;
     ESenseManager eSenseManager;
     static Activity activityObj;
@@ -119,7 +119,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     // Adding "Counter" activity
     static HashMap<String,Integer> activitySummary;
     private static Context context_;
-    private static Integer counterNum;
+    TimeZone useTimeZone;
 
     public static Context getContext(){
         return context_;
@@ -170,6 +170,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         // create firestore instance
         fireStoreHandler = new FireStoreHandler();
+        useTimeZone = TimeZone.getTimeZone("UTC");
         context_ = getApplicationContext();
         databaseHandler = new DatabaseHandler(this);
         activityListView = (ListView) findViewById(R.id.activityListView);
@@ -443,12 +444,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
 
                 } else {
-
-                    currentTime = Calendar.getInstance();
+                    currentTime = Calendar.getInstance(useTimeZone);
                     int hour = currentTime.get(Calendar.HOUR_OF_DAY);
                     int minute = currentTime.get(Calendar.MINUTE);
                     int second = currentTime.get(Calendar.SECOND);
-
                     chronometer.stop();
 
                     if (activityObj != null) {
@@ -468,7 +467,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     if(databaseHandler != null){
                         if(activityObj != null){
                             databaseHandler.addActivity(activityObj);
-
+//                            fireStoreHandler.recordActivity(
+//                                    activityObj.getActivityName(),
+//                                    activityObj.getCounter(),
+//                                    currentDate + " " + activityObj.getStartTime(),
+//                                    currentDate + " " + activityObj.getStopTime()
+//                            );
+                            fireStoreHandler.test();
                             ArrayList<Activity> activityHistory = databaseHandler.getAllActivities();
                             activityListView.setAdapter(new ActivityListAdapter(this, activityHistory));
 
