@@ -28,8 +28,10 @@ public class ActivitySubscription {
         activityClassifier = new ActivityClassifier(onActivity);
     }
 
-    public void submitEvent(CombinedSensorEvents event){
-        mSensorEvents.add(event);
+    public void submitEvent(){ // CombinedSensorEvents event
+//        combinedEvent.mPhone = phoneEvent;
+        // mSensorEvents.add(event);
+        mSensorEvents.add(combinedEvent);
         if(mSensorEvents.size() > bufferSize){
             mSensorEvents.remove();
             activityClassifier.push((List) mSensorEvents);
@@ -41,14 +43,16 @@ public class ActivitySubscription {
         Log.d(TAG, phoneSensorData);
         int divideConstant = 10;
         combinedEvent.mPhone.update(evtX/divideConstant, evtY/divideConstant, evtZ/divideConstant);
-        submitEvent(combinedEvent);
+//        submitEvent(combinedEvent);
+        submitEvent();
     }
 
     public void updateEsenseAcc(double evtX, double evtY, double evtZ) {
-        String eSensorData = "Phone accel x: " + evtX + ", y: " + evtY + ", z: " + evtZ;
+        String eSensorData = "eSense accel x: " + evtX + ", y: " + evtY + ", z: " + evtZ;
         Log.d(TAG, eSensorData);
         int divideConstant = 10000;
-        combinedEvent.mPhone.update(evtX/divideConstant, evtY/divideConstant, evtZ/divideConstant);
-        submitEvent(combinedEvent);
+        combinedEvent.mESense.update(evtX/divideConstant, evtY/divideConstant, evtZ/divideConstant);
+//        submitEvent(combinedEvent);
+//        submitEvent();
     }
 }

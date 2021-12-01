@@ -224,17 +224,17 @@ public class ActivityClassifier {
                 }
                 else if(checkpoints.size() == 2){
                     Log.d(TAG, "PUSHUPS DOWN");
-                    if(phoneMovingAverage.getZ() < -0.4) {
-                        prepNextCheckpoint(currentDelta);
-                    }
-//                    if(Math.signum(prevDeltaType1.getY()) != Math.signum(currentDelta.getY()) && Math.abs(currentDelta.getY() - currentDelta.getX()) / 2 > 0.3) {
+//                    if(phoneMovingAverage.getZ() < -0.4) {
 //                        prepNextCheckpoint(currentDelta);
 //                    }
+                    if(Math.signum(prevDeltaType1.getY()) != Math.signum(currentDelta.getY()) && Math.abs(currentDelta.getY() - currentDelta.getX()) / 2 > 0.3) {
+                        prepNextCheckpoint(currentDelta);
+                    }
                 }
                 else if(checkpoints.size() == 3) {
                     Log.d(TAG, "Finish PUSHUPS?");
-//                    if(Math.signum(prevDeltaType1.getX()) != Math.signum(currentDelta.getX()) && Math.abs(currentDelta.getX()) > 0.2) {
-                    if(phoneMovingAverage.getZ() < -0.4) {
+                    if(Math.signum(prevDeltaType1.getX()) != Math.signum(currentDelta.getX()) && Math.abs(currentDelta.getX()) > 0.2) {
+//                    if(phoneMovingAverage.getZ() < -0.4) {
                         Log.d(TAG, "ADD PUSHUPS");
                         submitActivity("PUSHUPS");
                         checkpoints.remove(checkpoints.size()-1);

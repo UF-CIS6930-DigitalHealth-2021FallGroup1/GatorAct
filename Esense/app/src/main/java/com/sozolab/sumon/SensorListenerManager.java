@@ -64,12 +64,15 @@ public class SensorListenerManager implements ESenseSensorListener {
      */
     @Override
     public void onSensorChanged(ESenseEvent evt) {
-        //Log.d(TAG, "onSensorChanged()");
-
+        Log.d(TAG, "onSensorChanged()");
+        Log.d(TAG, "Listen for esense event");
         if (dataCollecting){
             timeStamp = evt.getTimestamp();
             accel = evt.convertAccToG(eSenseConfig);
             gyro = evt.convertGyroToDegPerSecond(eSenseConfig);
+
+            String eSensorData = "eSense accel x: " + accel[0] + ", y: " + accel[1] + ", z: " + accel[2];
+            Log.d(TAG, eSensorData);
 
             activitySubscription.updateEsenseAcc(accel[0], accel[1], accel[2]);
 //            if(excelSheet != null){
@@ -128,7 +131,7 @@ public class SensorListenerManager implements ESenseSensorListener {
     }
 
     public void startDataCollection(String activity) {
-
+        Log.d(TAG, "start esense collection");
         this.activityName = activity;
         activityIndex = getActivityIndex(activityName);
 
@@ -150,26 +153,26 @@ public class SensorListenerManager implements ESenseSensorListener {
 
         rowIndex = 1;
         dataCollecting = false;
-        FileOutputStream accelOutputStream = null;
-
-        try {
-            accelOutputStream = new FileOutputStream(excelFile);
-            excelWorkbook.write(accelOutputStream);
-
-            Log.w(TAG, "Writing excelFile : " + excelFile);
-        } catch (IOException e) {
-            Log.w(TAG, "Error writing : " + excelFile, e);
-        } catch (Exception e) {
-            Log.w(TAG, "Failed to save data file", e);
-        } finally {
-            try {
-                if (null != accelOutputStream){
-                    accelOutputStream.close();
-                }
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-        }
+//        FileOutputStream accelOutputStream = null;
+//
+//        try {
+//            accelOutputStream = new FileOutputStream(excelFile);
+//            excelWorkbook.write(accelOutputStream);
+//
+//            Log.w(TAG, "Writing excelFile : " + excelFile);
+//        } catch (IOException e) {
+//            Log.w(TAG, "Error writing : " + excelFile, e);
+//        } catch (Exception e) {
+//            Log.w(TAG, "Failed to save data file", e);
+//        } finally {
+//            try {
+//                if (null != accelOutputStream){
+//                    accelOutputStream.close();
+//                }
+//            } catch (Exception ex) {
+//                ex.printStackTrace();
+//            }
+//        }
     }
 
     public int getActivityIndex(String activity){

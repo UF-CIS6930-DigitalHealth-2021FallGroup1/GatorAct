@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private String deviceName = "eSense-1625";  // "eSense-0598"
     private String activityName = "Activity";
 
-    private int timeout = 30000;
+    private int timeout = 60000;
 
     private Button connectButton;
     private Button headShakeButton;
