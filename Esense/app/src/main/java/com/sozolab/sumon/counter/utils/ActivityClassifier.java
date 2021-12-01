@@ -7,8 +7,10 @@ import com.sozolab.sumon.counter.model.SensorValues;
 import com.sozolab.sumon.counter.model.Checkpoints;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Queue;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.function.Function;
@@ -55,7 +57,11 @@ public class ActivityClassifier {
         }
     }
 
-    public void push(List<CombinedSensorEvents> scope){
+//    public void push(List<CombinedSensorEvents> scope){
+//    public void push(Queue<CombinedSensorEvents> scopeQ){
+    public void push(CombinedSensorEvents[] scopeArr){
+        List<CombinedSensorEvents> scope = new ArrayList<>(Arrays.asList(scopeArr));
+//        List<CombinedSensorEvents> scope = (List) scopeQ;
         Collections.reverse(scope);
         List<CombinedSensorEvents> cropped = scope.subList(0, eSenseWindowSize); // take(eSenseWindowSize)
         SensorValues result = new SensorValues(0, 0, 0);
@@ -216,21 +222,24 @@ public class ActivityClassifier {
             if(compatibleActivities.contains("PUSHUPS")){
                 Log.d(TAG, "checkPointSize: " + checkpoints.size() + ", phoneMovingAverage.getZ():" + phoneMovingAverage.getZ());
                 if(phoneMovingAverage.getZ() > -0.4){
-                    Log.d(TAG, "remove PUSHUPS");
+//                    Log.d(TAG, "remove PUSHUPS");
                     compatibleActivities.remove("PUSHUPS");
                 }else if(checkpoints.size() == 1){
-                    Log.d(TAG, "PUSHUPS Start");
+//                    Log.d(TAG, "PUSHUPS Start");
                     prepNextCheckpoint(currentDelta);
                 }
                 else if(checkpoints.size() == 2){
-                    Log.d(TAG, "PUSHUPS Second Checkout");
-                    if(Math.signum(prevDeltaType1.getY()) != Math.signum(currentDelta.getY()) && Math.abs(currentDelta.getY() - currentDelta.getX()) / 2 > 0.3) {
+//                    Log.d(TAG, "PUSHUPS Second Checkout");
+                    Log.d(TAG, "prevDeltaType1.y" + prevDeltaType1.getY());
+                    Log.d(TAG, "currentDelta.y" + currentDelta.getY());
+                    Log.d(TAG, "currentDelta.x" + currentDelta.getX());
+                    if(Math.signum(prevDeltaType1.getY()) != Math.signum(currentDelta.getY()) && Math.abs(currentDelta.getY() - currentDelta.getX()) / 2 > 0.03) {
                         prepNextCheckpoint(currentDelta);
                     }
                 }
                 else if(checkpoints.size() == 3){
-                    Log.d(TAG, "PUSHUPS Third Checkout");
-                    if(Math.signum(prevDeltaType1.getY()) != Math.signum(currentDelta.getY()) && Math.abs(currentDelta.getY() - currentDelta.getX()) / 2 > 0.3) {
+//                    Log.d(TAG, "PUSHUPS Third Checkout");
+                    if(Math.signum(prevDeltaType1.getY()) != Math.signum(currentDelta.getY()) && Math.abs(currentDelta.getY() - currentDelta.getX()) / 2 > 0.03) {
                         submitActivity("PUSHUPS");
                         checkpoints.remove(checkpoints.size()-1);
                         checkpoints.remove(checkpoints.size()-1);

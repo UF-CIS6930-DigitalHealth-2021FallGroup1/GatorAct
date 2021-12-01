@@ -16,7 +16,7 @@ import com.sozolab.sumon.io.esense.esenselib.ESenseManager;
 
 public class ConnectionListenerManager implements ESenseConnectionListener {
     private final String TAG = "ConectionLisenerManager";
-    private int samplingRate = 50;
+    private int samplingRate = 100;
     Context context;
     SensorListenerManager sensorListenerManager;
     TextView connectionTextView;
