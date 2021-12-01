@@ -42,7 +42,8 @@ public class PhoneSensorListenerManager implements SensorEventListener {
         dataCollecting = false;
         mSensorManager = (SensorManager)context.getSystemService(Context.SENSOR_SERVICE);
         mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        mSensorManager.registerListener(this, mAccelerometer , SensorManager.SENSOR_DELAY_NORMAL);
+        mSensorManager.registerListener(this, mAccelerometer , 200000);
+        // mSensorManager.registerListener(this, mAccelerometer , SensorManager.SENSOR_DELAY_FASTEST); ~ 20ms = 20000
         Log.d(TAG, "PhoneSensorListenerManager Create");
     }
 

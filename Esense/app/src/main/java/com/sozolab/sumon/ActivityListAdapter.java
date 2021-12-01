@@ -42,6 +42,7 @@ public class ActivityListAdapter extends BaseAdapter {
             holder.stopTime = (TextView) v.findViewById(R.id.stopTime);
             holder.activity = (TextView) v.findViewById(R.id.listItemActivity);
             holder.duration = (TextView) v.findViewById(R.id.totalTime);
+            holder.counterNum = (TextView) v.findViewById(R.id.counterNum);
             v.setTag(holder);
         } else {
             holder = (ViewHolder) v.getTag();
@@ -50,6 +51,7 @@ public class ActivityListAdapter extends BaseAdapter {
         holder.stopTime.setText(listData.get(position).getStopTime());
         holder.activity.setText(listData.get(position).getActivityName());
         holder.duration.setText(listData.get(position).getDuration());
+        holder.counterNum.setText(String.valueOf(listData.get(position).getCounter()));
         return v;
     }
     static class ViewHolder {
@@ -57,5 +59,6 @@ public class ActivityListAdapter extends BaseAdapter {
         TextView stopTime;
         TextView activity;
         TextView duration;
+        TextView counterNum;
     }
 }
