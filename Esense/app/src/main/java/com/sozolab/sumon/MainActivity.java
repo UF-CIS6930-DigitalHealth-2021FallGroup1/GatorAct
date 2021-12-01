@@ -1,5 +1,6 @@
 package com.sozolab.sumon;
 
+
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothHeadset;
 import android.content.Context;
@@ -9,31 +10,55 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.SystemClock;
+
+import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import com.github.mikephil.charting.charts.BarChart;
+import com.github.mikephil.charting.data.BarData;
+import com.github.mikephil.charting.data.BarDataSet;
+import com.github.mikephil.charting.data.BarEntry;
+import com.github.mikephil.charting.utils.ColorTemplate;
+
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentChange;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.sozolab.sumon.io.esense.esenselib.ESenseManager;
 import com.sozolab.sumon.counter.utils.ActivitySubscription;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static android.Manifest.permission.RECORD_AUDIO;
@@ -69,18 +94,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private SharedPreferences sharedPreferences;
     private SharedPreferences.Editor sharedPrefEditor;
 
+    private float[] activityValues;
+
+//    public FirebaseFirestore firestoreDB = FirebaseFirestore.getInstance();
+
     Calendar currentTime;
     ESenseManager eSenseManager;
     static Activity activityObj;
     Intent audioRecordServiceIntent;
-    static DatabaseHandler databaseHandler;
+    FirebaseFirestore db;
     FireStoreHandler fireStoreHandler;
+    
+    static DatabaseHandler databaseHandler;
+
     SensorListenerManager sensorListenerManager;
     PhoneSensorListenerManager phoneSensorListenerManager;
     ActivitySubscription activitySubscription;
     ConnectionListenerManager connectionListenerManager;
     private static final int PERMISSION_REQUEST_CODE = 200;
 
+    Map<String, Object> map;
+    String tempDate = "2021.11.30";
+  
     // Adding "Counter" activity
     static HashMap<String,Integer> activitySummary;
     private static Context context_;
@@ -100,11 +135,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         actionBar.setDisplayShowHomeEnabled(true);
         actionBar.setIcon(R.mipmap.esense);
 
-        sharedPreferences = getSharedPreferences("eSenseSharedPrefs",Context.MODE_PRIVATE);
+        sharedPreferences = getSharedPreferences("eSenseSharedPrefs", Context.MODE_PRIVATE);
         sharedPrefEditor = sharedPreferences.edit();
 
         recordButton = (ToggleButton) findViewById(R.id.recordButton);
-        connectButton =  (Button) findViewById(R.id.connectButton);
+        connectButton = (Button) findViewById(R.id.connectButton);
         headShakeButton = (Button) findViewById(R.id.headShakeButton);
         speakingButton = (Button) findViewById(R.id.speakingButton);
         noddingButton = (Button) findViewById(R.id.noddingButton);
@@ -132,15 +167,91 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         chronometer = (Chronometer) findViewById(R.id.chronometer);
 
+
         // create firestore instance
         fireStoreHandler = new FireStoreHandler();
         context_ = getApplicationContext();
         databaseHandler = new DatabaseHandler(this);
         activityListView = (ListView) findViewById(R.id.activityListView);
         ArrayList<Activity> activityHistory = databaseHandler.getAllActivities();
-        if(activityHistory.size() > 0){
+        if (activityHistory.size() > 0) {
             activityListView.setAdapter(new ActivityListAdapter(this, activityHistory));
         }
+
+        // Firestore collection
+        db = FirebaseFirestore.getInstance();
+        db.collection("dummyData").document(tempDate).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                System.out.println("date "+tempDate);
+                if (documentSnapshot.exists()) {
+                    System.out.println("TEST BEGIN");
+                    map = documentSnapshot.getData();
+                    activityValues = new float[map.size()];
+                    activityValues[0] = (Float.parseFloat((String) map.get("SQUATS")));
+                    activityValues[1] = (Float.parseFloat((String) map.get("SITUPS")));
+                    activityValues[2] = (Float.parseFloat((String) map.get("JUMPING_JACKS")));
+                    activityValues[3] = (Float.parseFloat((String) map.get("PUSHUPS")));
+                    System.out.println(map.get("SQUATS"));
+                    System.out.println("TEST END");
+                } else {
+                    System.out.println("NO FILE");
+                }
+            }
+        });
+
+
+
+        List<String> list = new ArrayList<>();
+        String[] items = new String[]{"2021.11.29", "2021.11.30"};
+        db.collection("dummyData").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()) {
+                    for (QueryDocumentSnapshot document : task.getResult()) {
+                        list.add(document.getId());
+                    }
+                    Log.d(TAG, list.toString());
+                } else {
+                    Log.d(TAG, "Error getting documents: ", task.getException());
+                }
+            }
+        });
+
+        // Drop down
+        Spinner dropdown = findViewById(R.id.dropdown);
+//        String[] items = list.toArray(new String[list.size()]);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, items);
+        dropdown.setAdapter(adapter);
+        dropdown.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                tempDate = dropdown.getSelectedItem().toString();
+                Toast.makeText(MainActivity.this, parent.getSelectedItem().toString(), Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+        findViewById(R.id.visualizeButton).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                updateActivityValues();
+                Intent i = new Intent(getApplicationContext(), VisualizeData.class);
+                for (float f : activityValues) {
+                    System.out.println(f);
+                }
+                if (activityValues != null) {
+                    System.out.println("activity has values");
+                    i.putExtra("values", activityValues);
+                }
+                startActivity(i);
+            }
+        });
+
 
         audioRecordServiceIntent = new Intent(this, AudioRecordService.class);
 
@@ -159,6 +270,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         } else {
             Log.d(TAG, "Permission already granted..");
         }
+    }
+
+    private void updateActivityValues() {
+        db.collection("dummyData").document(tempDate).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                System.out.println("date "+tempDate);
+                if (documentSnapshot.exists()) {
+                    System.out.println("TEST BEGIN");
+                    map = documentSnapshot.getData();
+                    activityValues = new float[map.size()];
+                    activityValues[0] = (Float.parseFloat((String) map.get("SQUATS")));
+                    activityValues[1] = (Float.parseFloat((String) map.get("SITUPS")));
+                    activityValues[2] = (Float.parseFloat((String) map.get("JUMPING_JACKS")));
+                    activityValues[3] = (Float.parseFloat((String) map.get("PUSHUPS")));
+                    System.out.println(map.get("SQUATS"));
+                    System.out.println("TEST END");
+                } else {
+                    System.out.println("NO FILE");
+                }
+            }
+        });
     }
 
     public static boolean handleActivity(String activity) {
@@ -214,7 +347,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View v) {
 
-        switch (v.getId()){
+        switch (v.getId()) {
             case R.id.connectButton:
                 progressBar.setVisibility(View.VISIBLE);
                 connectEarables();
@@ -277,23 +410,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
 
             case R.id.recordButton:
-                if(recordButton.isChecked()) {
-                    if(activityName.equals("Activity")){
+                if (recordButton.isChecked()) {
+
+                    if (activityName.equals("Activity")) {
                         recordButton.setChecked(false);
                         showAlertMessage();
-                    }
-                    else{
+                    } else {
                         activityObj = new Activity();
 
                         currentTime = Calendar.getInstance();
-                        int hour = currentTime.get(Calendar.HOUR_OF_DAY) ;
+                        int hour = currentTime.get(Calendar.HOUR_OF_DAY);
                         int minute = currentTime.get(Calendar.MINUTE);
                         int second = currentTime.get(Calendar.SECOND);
 
                         chronometer.setBase(SystemClock.elapsedRealtime());
                         chronometer.start();
 
-                        if(activityObj != null){
+                        if (activityObj != null) {
                             String startTime = hour + " : " + minute + " : " + second;
                             activityObj.setActivityName(activityName);
                             activityObj.setStartTime(startTime);
@@ -312,13 +445,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 } else {
 
                     currentTime = Calendar.getInstance();
-                    int hour = currentTime.get(Calendar.HOUR_OF_DAY) ;
+                    int hour = currentTime.get(Calendar.HOUR_OF_DAY);
                     int minute = currentTime.get(Calendar.MINUTE);
                     int second = currentTime.get(Calendar.SECOND);
 
                     chronometer.stop();
 
-                    if(activityObj != null){
+                    if (activityObj != null) {
                         String stopTime = hour + " : " + minute + " : " + second;
                         String duration = chronometer.getText().toString();
                         activityObj.setStopTime(stopTime);
@@ -331,13 +464,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                     stopDataCollection();
                     stopService(audioRecordServiceIntent);
-
-                    Log.d(TAG, "start print activitySummary");
-                    for (Map.Entry<String,Integer> entry : activitySummary.entrySet()) {
-                        String key = entry.getKey();
-                        Integer value = entry.getValue();
-                        Log.d(TAG, "activitySummary key: " + key + ", value: " + value);
-                    }
 
                     if(databaseHandler != null){
                         if(activityObj != null){
@@ -368,9 +494,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         progressBar.setVisibility(View.GONE);
 
         boolean isConnected = isESenseDeviceConnected();
-        if(isConnected){
+        if (isConnected) {
             Toast.makeText(this, "Connected", Toast.LENGTH_SHORT).show();
-        }else{
+        } else {
             sharedPrefEditor.putString("status", "disconnected");
             sharedPrefEditor.commit();
 
@@ -381,36 +507,36 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             //Toast.makeText(this, "Disconnected", Toast.LENGTH_SHORT).show();
         }
 
-        String isChecked =  sharedPreferences.getString("checked", null);
-        String status =  sharedPreferences.getString("status", null);
-        String activity =  sharedPreferences.getString("activityName", null);
+        String isChecked = sharedPreferences.getString("checked", null);
+        String status = sharedPreferences.getString("status", null);
+        String activity = sharedPreferences.getString("activityName", null);
 
-        if(activity != null){
+        if (activity != null) {
             activityName = activity;
             setActivityName();
         }
 
-        if(status == null){
+        if (status == null) {
             connectionTextView.setText("Disconnected");
             deviceNameTextView.setText(deviceName);
             statusImageView.setImageResource(R.drawable.disconnected);
-        }else if(status.equals("connected")){
+        } else if (status.equals("connected")) {
             connectionTextView.setText("Connected");
             deviceNameTextView.setText(deviceName);
             statusImageView.setImageResource(R.drawable.connected);
-        }else if(status.equals("disconnected")){
+        } else if (status.equals("disconnected")) {
             connectionTextView.setText("Disconnected");
             deviceNameTextView.setText(deviceName);
             statusImageView.setImageResource(R.drawable.disconnected);
         }
 
-        if(isChecked == null){
+        if (isChecked == null) {
             recordButton.setChecked(false);
             recordButton.setBackgroundResource(R.drawable.start);
-        }else if(isChecked.equals("on")){
+        } else if (isChecked.equals("on")) {
             recordButton.setChecked(true);
             recordButton.setBackgroundResource(R.drawable.stop);
-        }else if(isChecked.equals("off")){
+        } else if (isChecked.equals("off")) {
             recordButton.setChecked(false);
             recordButton.setBackgroundResource(R.drawable.start);
         }
@@ -430,7 +556,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Log.d(TAG, "onPause()");
     }
 
-    public void setActivityName(){
+    public void setActivityName() {
         activityTextView.setText(activityName);
     }
 
@@ -438,12 +564,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         eSenseManager.connect(timeout);
     }
 
-    public void startDataCollection(String activity){
+    public void startDataCollection(String activity) {
         sensorListenerManager.startDataCollection(activity);
         phoneSensorListenerManager.startDataCollection(activity);
     }
 
-    public void stopDataCollection(){
+    public void stopDataCollection() {
         sensorListenerManager.stopDataCollection();
         phoneSensorListenerManager.stopDataCollection();
     }
@@ -465,7 +591,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, String permissions[],
+                                           int[] grantResults) {
         switch (requestCode) {
             case PERMISSION_REQUEST_CODE:
                 if (grantResults.length > 0) {
@@ -474,7 +601,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     boolean storageAccepted = grantResults[1] == PackageManager.PERMISSION_GRANTED;
                     boolean recordAccepted = grantResults[2] == PackageManager.PERMISSION_GRANTED;
 
-                    if (locationAccepted && storageAccepted && recordAccepted){
+                    if (locationAccepted && storageAccepted && recordAccepted) {
                         Log.d(TAG, "Permission granted");
                     } else {
                         Log.d(TAG, "Permission denied");
@@ -509,7 +636,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .show();
     }
 
-    public void showAlertMessage(){
+    public void showAlertMessage() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage("Please select an activityName !")
                 .setCancelable(false)
