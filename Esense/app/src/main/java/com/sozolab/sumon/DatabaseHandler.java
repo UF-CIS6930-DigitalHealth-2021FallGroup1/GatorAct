@@ -20,6 +20,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     private static final String KEY_START_TIME = "start_time";
     private static final String KEY_STOP_TIME = "stop_time";
     private static final String KEY_DURATION = "duration";
+    private static final String KEY_COUNTER = "counter";
 
     public DatabaseHandler(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -29,7 +30,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         String CREATE_ACTIVITY_TABLE = "CREATE TABLE " + TABLE_ACTIVITY + "("
                 + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," + KEY_ACTIVITY + " TEXT,"
-                + KEY_START_TIME + " TEXT," + KEY_STOP_TIME + " TEXT," + KEY_DURATION + " TEXT" + ")";
+                + KEY_START_TIME + " TEXT," + KEY_STOP_TIME + " TEXT," + KEY_DURATION + " TEXT," + KEY_COUNTER + " TEXT" + ")";
         db.execSQL(CREATE_ACTIVITY_TABLE);
     }
 
@@ -47,6 +48,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         contentValues.put(KEY_START_TIME, activity.getStartTime());
         contentValues.put(KEY_STOP_TIME, activity.getStopTime());
         contentValues.put(KEY_DURATION, activity.getDuration());
+        contentValues.put(KEY_COUNTER, activity.getCounter());
 
         db.insert(TABLE_ACTIVITY, null, contentValues);
         db.close();
@@ -67,6 +69,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                 activity.setStartTime(cursor.getString(2));
                 activity.setStopTime(cursor.getString(3));
                 activity.setDuration(cursor.getString(4));
+                activity.setCounter(cursor.getInt(5));
                 activityList.add(activity);
             } while (cursor.moveToNext());
         }

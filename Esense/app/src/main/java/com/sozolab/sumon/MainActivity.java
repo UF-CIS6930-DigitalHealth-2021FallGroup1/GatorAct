@@ -52,6 +52,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.sozolab.sumon.io.esense.esenselib.ESenseManager;
+import com.sozolab.sumon.counter.utils.ActivitySubscription;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -66,10 +67,11 @@ import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
-    private String TAG = "Esense";
+    private String TAG = "MainActivity";
     private String deviceName = "eSense-1625";  // "eSense-0598"
     private String activityName = "Activity";
-    private int timeout = 30000;
+
+    private int timeout = 60000;
 
     private Button connectButton;
     private Button headShakeButton;
@@ -79,13 +81,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button walkButton;
     private Button stayButton;
     private Button speakWalkButton;
-    private ListView activityListView;
+    private Button counterButton;
+    private static ListView activityListView;
     private Chronometer chronometer;
     private ToggleButton recordButton;
 
     private TextView connectionTextView;
     private TextView deviceNameTextView;
-    private TextView activityTextView;
+    private static TextView activityTextView;
     private ImageView statusImageView;
     private ProgressBar progressBar;
     private SharedPreferences sharedPreferences;
@@ -97,17 +100,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     Calendar currentTime;
     ESenseManager eSenseManager;
-    Activity activityObj;
+    static Activity activityObj;
     Intent audioRecordServiceIntent;
-    DatabaseHandler databaseHandler;
     FirebaseFirestore db;
     FireStoreHandler fireStoreHandler;
+    
+    static DatabaseHandler databaseHandler;
+
     SensorListenerManager sensorListenerManager;
+    PhoneSensorListenerManager phoneSensorListenerManager;
+    ActivitySubscription activitySubscription;
     ConnectionListenerManager connectionListenerManager;
     private static final int PERMISSION_REQUEST_CODE = 200;
 
     Map<String, Object> map;
     String tempDate = "2021.11.30";
+  
+    // Adding "Counter" activity
+    static HashMap<String,Integer> activitySummary;
+    private static Context context_;
+    private static Integer counterNum;
+
+    public static Context getContext(){
+        return context_;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -131,6 +147,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         walkButton = (Button) findViewById(R.id.walkButton);
         stayButton = (Button) findViewById(R.id.stayButton);
         speakWalkButton = (Button) findViewById(R.id.speak_walk_button);
+        counterButton = (Button) findViewById(R.id.counter_button);
 
         recordButton.setOnClickListener(this);
         connectButton.setOnClickListener(this);
@@ -141,6 +158,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         walkButton.setOnClickListener(this);
         stayButton.setOnClickListener(this);
         speakWalkButton.setOnClickListener(this);
+        counterButton.setOnClickListener(this);
 
         statusImageView = (ImageView) findViewById(R.id.statusImage);
         connectionTextView = (TextView) findViewById(R.id.connectionTV);
@@ -152,7 +170,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         // create firestore instance
         fireStoreHandler = new FireStoreHandler();
-
+        context_ = getApplicationContext();
         databaseHandler = new DatabaseHandler(this);
         activityListView = (ListView) findViewById(R.id.activityListView);
         ArrayList<Activity> activityHistory = databaseHandler.getAllActivities();
@@ -236,7 +254,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
         audioRecordServiceIntent = new Intent(this, AudioRecordService.class);
-        sensorListenerManager = new SensorListenerManager(this);
+
+        // Adding activity counter
+        activitySummary = new HashMap<String, Integer>();
+        activitySubscription = new ActivitySubscription(MainActivity::handleActivity);
+        sensorListenerManager = new SensorListenerManager(this, activitySubscription);
+        phoneSensorListenerManager = new PhoneSensorListenerManager(this, activitySubscription);
+
         connectionListenerManager = new ConnectionListenerManager(this, sensorListenerManager,
                 connectionTextView, deviceNameTextView, statusImageView, progressBar, sharedPrefEditor);
         eSenseManager = new ESenseManager(deviceName, MainActivity.this.getApplicationContext(), connectionListenerManager);
@@ -270,6 +294,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
     }
 
+    public static boolean handleActivity(String activity) {
+        Log.d("handleActivity", "Current Activity:" + activity);
+        if (activity != null) {
+            if(activitySummary.get(activity) == null) {
+                activitySummary.put(activity, 0);
+            }
+            if(activity != "NEUTRAL" && activityObj.getActivityName() == "Counter") {
+                int currentCount = activitySummary.get(activity) + 1;
+                activitySummary.put(activity, currentCount);
+                activityObj.setCounter(currentCount);
+                Log.d("handleActivity", "counterNum: " + activityObj.getCounter() + " on counting activity: " + activity);
+            }
+        };
+        return true;
+    }
 
     public static boolean isESenseDeviceConnected() {
         BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -363,6 +402,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 setActivityName();
                 break;
 
+            case R.id.counter_button:
+                activityName = "Counter";
+                sharedPrefEditor.putString("activityName", activityName);
+                sharedPrefEditor.commit();
+                setActivityName();
+                break;
+
             case R.id.recordButton:
                 if (recordButton.isChecked()) {
 
@@ -370,7 +416,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         recordButton.setChecked(false);
                         showAlertMessage();
                     } else {
-
                         activityObj = new Activity();
 
                         currentTime = Calendar.getInstance();
@@ -420,21 +465,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     stopDataCollection();
                     stopService(audioRecordServiceIntent);
 
-                    if (databaseHandler != null) {
-                        if (activityObj != null) {
+                    if(databaseHandler != null){
+                        if(activityObj != null){
                             databaseHandler.addActivity(activityObj);
+
                             ArrayList<Activity> activityHistory = databaseHandler.getAllActivities();
                             activityListView.setAdapter(new ActivityListAdapter(this, activityHistory));
 
                             for (Activity activity : activityHistory) {
                                 String activityLog = "Activity : " + activity.getActivityName() + " , Start Time : " + activity.getStartTime()
-                                        + " , Stop Time : " + activity.getStopTime() + " , Duration : " + activity.getDuration();
+                                        + " , Stop Time : " + activity.getStopTime() + " , Duration : " + activity.getDuration() + ", Counter: " + activity.getCounter();
                                 Log.d(TAG, activityLog);
                             }
                         }
                     }
 
                     activityObj = null;
+                    activitySummary.clear();
                 }
                 break;
         }
@@ -511,19 +558,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     public void setActivityName() {
         activityTextView.setText(activityName);
-
     }
 
-    public void connectEarables() {
+    public void connectEarables(){
         eSenseManager.connect(timeout);
     }
 
     public void startDataCollection(String activity) {
         sensorListenerManager.startDataCollection(activity);
+        phoneSensorListenerManager.startDataCollection(activity);
     }
 
     public void stopDataCollection() {
         sensorListenerManager.stopDataCollection();
+        phoneSensorListenerManager.stopDataCollection();
     }
 
     private boolean checkPermission() {
