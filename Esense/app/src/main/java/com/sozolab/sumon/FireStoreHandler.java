@@ -16,6 +16,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TimeZone;
+import java.util.UUID;
 
 public class FireStoreHandler {
     private  FirebaseFirestore db;
@@ -26,7 +27,7 @@ public class FireStoreHandler {
         db = FirebaseFirestore.getInstance();
     }
 
-    public void recordActivity(String actionName, Integer counterNum, String startTime, String stopTime, Calendar currentTime) {
+    public void recordActivity(String actionName, Integer counterNum, String startTime, String stopTime, Calendar currentTime, String dataPrefix) {
         Map<String, Object> activityObj = new HashMap<>();
         activityObj.put("type", actionName);
         activityObj.put("counterNum", counterNum);
@@ -49,25 +50,27 @@ public class FireStoreHandler {
             e.printStackTrace();
         }
 
-
-        db.collection("action")
-            .add(activityObj)
-            .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+        String uniqueId = UUID.randomUUID().toString();
+        String keyId = dataPrefix + "_" + uniqueId;
+        Log.d(TAG, "Start recording data into fire store with keyId: " + keyId);
+        db.collection("action").document(keyId)
+            .set(activityObj)
+            .addOnSuccessListener(new OnSuccessListener<Void>() {
                 @Override
-                public void onSuccess(DocumentReference documentReference) {
-                    Log.d(TAG, "DocumentSnapshot added with ID: " + documentReference.getId());
+                public void onSuccess(Void aVoid) {
+                    Log.d(TAG, "DocumentSnapshot successfully written!");
                 }
             })
             .addOnFailureListener(new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception e) {
-                    Log.w(TAG, "Error adding document", e);
+                    Log.w(TAG, "Error writing document", e);
                 }
             });
     }
 
     public void test() {
         Calendar currentTime = Calendar.getInstance();
-        recordActivity("test", 10, "06/05/2020 12:10:10", "06/05/2020 12:10:30", currentTime);
+        recordActivity("test", 10, "06/05/2020 12:10:10", "06/05/2020 12:10:30", currentTime, "06/05/2020");
     }
 }

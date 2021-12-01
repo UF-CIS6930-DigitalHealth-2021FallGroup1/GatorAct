@@ -446,7 +446,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     int minute = currentTime.get(Calendar.MINUTE);
                     int second = currentTime.get(Calendar.SECOND);
                     SimpleDateFormat dateFormatter = new SimpleDateFormat("MM/dd/yyyy");
+                    SimpleDateFormat fireStoreDateFormatter = new SimpleDateFormat("yyyy-MM-dd");
                     String currentDate = dateFormatter.format(currentTime.getTime());
+                    String datePrefix = fireStoreDateFormatter.format(currentTime.getTime());
                     chronometer.stop();
 
                     if (activityObj != null) {
@@ -477,7 +479,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                     activityObj.getCounter(),
                                     currentDate + " " + activityObj.getStartTime(),
                                     currentDate + " " + activityObj.getStopTime(),
-                                    currentTime
+                                    currentTime,
+                                    datePrefix
                             );
                             ArrayList<Activity> activityHistory = databaseHandler.getAllActivities();
                             activityListView.setAdapter(new ActivityListAdapter(this, activityHistory));
