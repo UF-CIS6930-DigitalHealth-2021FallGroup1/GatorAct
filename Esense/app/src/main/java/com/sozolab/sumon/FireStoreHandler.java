@@ -34,6 +34,7 @@ public class FireStoreHandler {
         activityObj.put("createTime", currentTime.getTime());
         activityObj.put("startTime", startTime);
         activityObj.put("stopTime", stopTime);
+        activityObj.put("currentDate", dataPrefix);
 
         SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH : mm : ss");
         try {
