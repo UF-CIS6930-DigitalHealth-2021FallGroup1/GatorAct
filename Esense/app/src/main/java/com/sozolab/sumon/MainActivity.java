@@ -83,7 +83,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button walkButton;
     private Button stayButton;
     private Button speakWalkButton;
-    private Button counterButton;
+    private Button squadButton;
     private static ListView activityListView;
     private Chronometer chronometer;
     private ToggleButton recordButton;
@@ -119,7 +119,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     // Adding "Counter" activity
     static HashMap<String,Integer> activitySummary;
     private static Context context_;
-    TimeZone useTimeZone;
 
     public static Context getContext(){
         return context_;
@@ -147,7 +146,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         walkButton = (Button) findViewById(R.id.walkButton);
         stayButton = (Button) findViewById(R.id.stayButton);
         speakWalkButton = (Button) findViewById(R.id.speak_walk_button);
-        counterButton = (Button) findViewById(R.id.counter_button);
+        squadButton = (Button) findViewById(R.id.squad_button);
 
         recordButton.setOnClickListener(this);
         connectButton.setOnClickListener(this);
@@ -158,7 +157,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         walkButton.setOnClickListener(this);
         stayButton.setOnClickListener(this);
         speakWalkButton.setOnClickListener(this);
-        counterButton.setOnClickListener(this);
+        squadButton.setOnClickListener(this);
 
         statusImageView = (ImageView) findViewById(R.id.statusImage);
         connectionTextView = (TextView) findViewById(R.id.connectionTV);
@@ -170,7 +169,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         // create firestore instance
         fireStoreHandler = new FireStoreHandler();
-        useTimeZone = TimeZone.getTimeZone("UTC");
         context_ = getApplicationContext();
         databaseHandler = new DatabaseHandler(this);
         activityListView = (ListView) findViewById(R.id.activityListView);
@@ -301,10 +299,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             if(activitySummary.get(activity) == null) {
                 activitySummary.put(activity, 0);
             }
-            if(activity != "NEUTRAL" && activityObj.getActivityName() == "Counter") {
+            if(activity != "NEUTRAL") {
                 int currentCount = activitySummary.get(activity) + 1;
                 activitySummary.put(activity, currentCount);
-                activityObj.setCounter(currentCount);
                 Log.d("handleActivity", "counterNum: " + activityObj.getCounter() + " on counting activity: " + activity);
             }
         };
@@ -403,8 +400,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 setActivityName();
                 break;
 
-            case R.id.counter_button:
-                activityName = "Counter";
+            case R.id.squad_button:
+                activityName = "Squad";
                 sharedPrefEditor.putString("activityName", activityName);
                 sharedPrefEditor.commit();
                 setActivityName();
@@ -444,7 +441,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
 
                 } else {
-                    currentTime = Calendar.getInstance(useTimeZone);
+                    currentTime = Calendar.getInstance();
                     int hour = currentTime.get(Calendar.HOUR_OF_DAY);
                     int minute = currentTime.get(Calendar.MINUTE);
                     int second = currentTime.get(Calendar.SECOND);
@@ -468,6 +465,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                     if(databaseHandler != null){
                         if(activityObj != null){
+                            int totalCount = 0;
+                            if(activitySummary.containsKey(activityObj.getActivityName().toLowerCase())) {
+                                totalCount = activitySummary.get(activityObj.getActivityName().toLowerCase());
+                            }
+                            activityObj.setCounter(totalCount);
+
                             databaseHandler.addActivity(activityObj);
                             fireStoreHandler.recordActivity(
                                     activityObj.getActivityName(),

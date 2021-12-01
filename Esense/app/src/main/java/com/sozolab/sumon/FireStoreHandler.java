@@ -34,7 +34,7 @@ public class FireStoreHandler {
         activityObj.put("startTime", startTime);
         activityObj.put("stopTime", stopTime);
 
-        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
+        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH : mm : ss");
         try {
             Date d1 = sdf.parse(startTime);
             Date d2 = sdf.parse(stopTime);
@@ -67,8 +67,7 @@ public class FireStoreHandler {
     }
 
     public void test() {
-        TimeZone testTimeZone = TimeZone.getTimeZone("UTC");
-        Calendar currentTime = Calendar.getInstance(testTimeZone);
+        Calendar currentTime = Calendar.getInstance();
         recordActivity("test", 10, "06/05/2020 12:10:10", "06/05/2020 12:10:30", currentTime);
     }
 }
