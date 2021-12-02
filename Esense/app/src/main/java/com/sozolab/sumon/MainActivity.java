@@ -336,24 +336,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private void updateActivityValues() {
-        db.collection("dummyData").document(tempDate).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-            @Override
-            public void onSuccess(DocumentSnapshot documentSnapshot) {
-                if (documentSnapshot.exists()) {
-                    map = documentSnapshot.getData();
-                    activityValues = new float[map.size()];
-                    activityValues[0] = (Float.parseFloat((String) map.get("SQUATS")));
-                    activityValues[1] = (Float.parseFloat((String) map.get("SITUPS")));
-                    activityValues[2] = (Float.parseFloat((String) map.get("JUMPING_JACKS")));
-                    activityValues[3] = (Float.parseFloat((String) map.get("PUSHUPS")));
-                } else {
-                    System.out.println("NO FILE");
-                }
-            }
-        });
-    }
-
     public static boolean handleActivity(String activity) {
         Log.d("handleActivity", "detect Activity - " + activity);
 

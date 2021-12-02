@@ -68,11 +68,11 @@ public class VisualizeData extends AppCompatActivity {
 
             for (int i = 0; i < 7; i++) {
                 List<BarEntry> temp = new ArrayList<>();
-                temp.add(new BarEntry(0f+5*i, squats[i]));
-                temp.add(new BarEntry(1f+5*i, situps[i]));
-                temp.add(new BarEntry(2f+5*i, pushups[i]));
-                temp.add(new BarEntry(3f+5*i, jacks[i]));
-                temp.add(new BarEntry(4f+5*i, stayings[i]));
+                temp.add(new BarEntry(0f+6*i, squats[i]));
+                temp.add(new BarEntry(1f+6*i, situps[i]));
+                temp.add(new BarEntry(2f+6*i, pushups[i]));
+                temp.add(new BarEntry(3f+6*i, jacks[i]));
+                temp.add(new BarEntry(4f+6*i, stayings[i]));
                 sets[i] = new BarDataSet(temp, labels[i]);
                 sets[i].setColors(ColorTemplate.COLORFUL_COLORS);
             }
