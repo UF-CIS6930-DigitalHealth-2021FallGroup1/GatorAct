@@ -60,6 +60,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
 
@@ -84,9 +85,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button stayButton;
     private Button speakWalkButton;
     private Button squatsButton;
-    private Button pushupButton;
-    private Button jumpJackButton;
-    private Button sitUpButton;
+    private Button pushupsButton;
+    private Button jumpJacksButton;
+    private Button sitUpsButton;
 
     private static ListView activityListView;
     private Chronometer chronometer;
@@ -151,6 +152,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         stayButton = (Button) findViewById(R.id.stayButton);
         speakWalkButton = (Button) findViewById(R.id.speak_walk_button);
         squatsButton = (Button) findViewById(R.id.squats_button);
+        pushupsButton = (Button) findViewById(R.id.pushups_button);
+        jumpJacksButton = (Button) findViewById(R.id.jumpjacks_button);
+        sitUpsButton = (Button) findViewById(R.id.situps_button);
 
         recordButton.setOnClickListener(this);
         connectButton.setOnClickListener(this);
@@ -162,6 +166,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         stayButton.setOnClickListener(this);
         speakWalkButton.setOnClickListener(this);
         squatsButton.setOnClickListener(this);
+        pushupsButton.setOnClickListener(this);
+        jumpJacksButton.setOnClickListener(this);
+        sitUpsButton.setOnClickListener(this);
 
         statusImageView = (ImageView) findViewById(R.id.statusImage);
         connectionTextView = (TextView) findViewById(R.id.connectionTV);
@@ -298,15 +305,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public static boolean handleActivity(String activity) {
-        Log.d("handleActivity", "Current Activity:" + activity);
         if (activity != null) {
-            if(activitySummary.get(activity) == null) {
-                activitySummary.put(activity, 0);
+            String activityLow = activity.toLowerCase();
+            Log.d("handleActivity", "detect Activity - " + activityLow + ", chosen activity: " + activityObj.getActivityName().toLowerCase());
+            if(activitySummary.get(activityLow) == null) {
+                activitySummary.put(activityLow, 0);
             }
             if(activity != "NEUTRAL") {
-                int currentCount = activitySummary.get(activity) + 1;
-                activitySummary.put(activity, currentCount);
-                Log.d("handleActivity", "counterNum: " + activityObj.getCounter() + " on counting activity: " + activity);
+                int currentCount = activitySummary.get(activityLow) + 1;
+                activitySummary.put(activityLow, currentCount);
+                Log.d("handleActivity", "counterNum: " + activityObj.getCounter() + " on counting activity: " + activityLow);
             }
         };
         return true;
@@ -406,6 +414,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             case R.id.squats_button:
                 activityName = "Squats";
+                sharedPrefEditor.putString("activityName", activityName);
+                sharedPrefEditor.commit();
+                setActivityName();
+                break;
+
+            case R.id.pushups_button:
+                activityName = "PushUps";
+                sharedPrefEditor.putString("activityName", activityName);
+                sharedPrefEditor.commit();
+                setActivityName();
+                break;
+
+            case R.id.jumpjacks_button:
+                activityName = "Jumping Jacks";
+                sharedPrefEditor.putString("activityName", activityName);
+                sharedPrefEditor.commit();
+                setActivityName();
+                break;
+
+            case R.id.situps_button:
+                activityName = "SitUps";
                 sharedPrefEditor.putString("activityName", activityName);
                 sharedPrefEditor.commit();
                 setActivityName();
