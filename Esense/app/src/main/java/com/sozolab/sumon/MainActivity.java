@@ -353,6 +353,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 list.add(document.getId());
                                 System.out.println("document.getId() = " + document.getId());
                                 //get value from each document
+                                if(!document.getData().containsKey("createTime")) continue;
                                 String createTime = convertDate(((Timestamp) document.getData().get("createTime")).toDate());
 
                                 if (!desiredDays.contains(createTime)) {
