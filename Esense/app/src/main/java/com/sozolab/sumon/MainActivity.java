@@ -44,6 +44,7 @@ import com.github.mikephil.charting.utils.ColorTemplate;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentReference;
@@ -58,6 +59,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -67,6 +69,59 @@ import java.util.TimeZone;
 import static android.Manifest.permission.RECORD_AUDIO;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
+
+class ActivityObject {
+    private String dateID;
+    private int squats = 0;
+    private int pushups = 0;
+    private int jumpingjacks = 0;
+    private int staying = 0;
+    private int situps = 0;
+
+    ActivityObject(String dateID) {
+        this.dateID = dateID;
+    }
+
+    public int getSquats() {
+        return squats;
+    }
+
+    public void setSquats(int squats) {
+        this.squats += squats;
+    }
+
+    public int getPushups() {
+        return pushups;
+    }
+
+    public void setPushups(int pushups) {
+        this.pushups += pushups;
+    }
+
+    public int getJumpingjacks() {
+        return jumpingjacks;
+    }
+
+    public void setJumpingjacks(int jumpingjacks) {
+        this.jumpingjacks += jumpingjacks;
+    }
+
+    public int getSitups() {
+        return situps;
+    }
+
+    public void setSitups(int situps) {
+        this.situps += situps;
+    }
+
+    public void setStaying(int staying) {
+        this.staying += staying;
+    }
+
+    public int getStaying() {
+        return this.staying;
+    }
+}
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -101,7 +156,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private SharedPreferences sharedPreferences;
     private SharedPreferences.Editor sharedPrefEditor;
 
+    private String[] labels;
+    private float[] squats;
+    private float[] pushups;
+    private float[] situps;
+    private float[] jumpingjacks;
+    private float[] stayings;
     private float[] activityValues;
+    private HashMap<String, ActivityObject> mapOfActivities = new HashMap<>();
 
     Calendar currentTime;
     ESenseManager eSenseManager;
@@ -127,6 +189,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     public static Context getContext(){
         return context_;
+    }
+
+    private List<String> getWeekDates() {
+        List<String> output = new ArrayList<String>();
+        Calendar cal = Calendar.getInstance();
+        for (int i = 0; i < 7; i++) {
+            output.add("" + cal.get(Calendar.YEAR) + (cal.get(Calendar.MONTH) + 1) + cal.get(Calendar.DATE));
+            cal.add(Calendar.DATE, -1);
+        }
+        return output;
     }
 
     @Override
@@ -188,81 +260,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             activityListView.setAdapter(new ActivityListAdapter(this, activityHistory));
         }
 
+
         // Firestore collection
         db = FirebaseFirestore.getInstance();
         db.collection("dummyData").document(tempDate).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
             public void onSuccess(DocumentSnapshot documentSnapshot) {
-                System.out.println("date "+tempDate);
+                System.out.println("date " + tempDate);
                 if (documentSnapshot.exists()) {
-                    System.out.println("TEST BEGIN");
                     map = documentSnapshot.getData();
                     activityValues = new float[map.size()];
                     activityValues[0] = (Float.parseFloat((String) map.get("SQUATS")));
                     activityValues[1] = (Float.parseFloat((String) map.get("SITUPS")));
                     activityValues[2] = (Float.parseFloat((String) map.get("JUMPING_JACKS")));
                     activityValues[3] = (Float.parseFloat((String) map.get("PUSHUPS")));
-                    System.out.println(map.get("SQUATS"));
-                    System.out.println("TEST END");
                 } else {
                     System.out.println("NO FILE");
                 }
             }
         });
 
-
-
-        List<String> list = new ArrayList<>();
-        String[] items = new String[]{"2021.11.29", "2021.11.30"};
-        db.collection("dummyData").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                if (task.isSuccessful()) {
-                    for (QueryDocumentSnapshot document : task.getResult()) {
-                        list.add(document.getId());
-                    }
-                    Log.d(TAG, list.toString());
-                } else {
-                    Log.d(TAG, "Error getting documents: ", task.getException());
-                }
-            }
-        });
-
         // Drop down
-        Spinner dropdown = findViewById(R.id.dropdown);
-//        String[] items = list.toArray(new String[list.size()]);
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, items);
-        dropdown.setAdapter(adapter);
-        dropdown.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                tempDate = dropdown.getSelectedItem().toString();
-                Toast.makeText(MainActivity.this, parent.getSelectedItem().toString(), Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });
-
-        findViewById(R.id.visualizeButton).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                updateActivityValues();
-                Intent i = new Intent(getApplicationContext(), VisualizeData.class);
-                for (float f : activityValues) {
-                    System.out.println(f);
-                }
-                if (activityValues != null) {
-                    System.out.println("activity has values");
-                    i.putExtra("values", activityValues);
-                }
-                startActivity(i);
-            }
-        });
-
-
         audioRecordServiceIntent = new Intent(this, AudioRecordService.class);
 
         // Adding activity counter
@@ -282,21 +300,53 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    private String convertDate(Date d) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(d);
+        int month = cal.get(Calendar.MONTH) + 1;
+        int day = cal.get(Calendar.DAY_OF_MONTH);
+        int year = cal.get(Calendar.YEAR);
+        return year + "-" + month + "-" + day;
+    }
+
+    private void populateValuesFromMap() {
+        labels = getWeekDates().toArray(new String[7]);
+        squats = new float[7];
+        pushups = new float[7];
+        situps = new float[7];
+        jumpingjacks = new float[7];
+        stayings = new float[7];
+        int count = 0;
+        for (Map.Entry<String, ActivityObject> entry : mapOfActivities.entrySet()) {
+            squats[count] = entry.getValue().getSquats();
+            pushups[count] = entry.getValue().getPushups();
+            situps[count] = entry.getValue().getSitups();
+            jumpingjacks[count] = entry.getValue().getJumpingjacks();
+            stayings[count] = entry.getValue().getStaying();
+            count++;
+        }
+
+        // populate unfilled elements with 0
+        for (int i = count; i < 7; i++) {
+            squats[i] = 0;
+            pushups[i] = 0;
+            situps[i] = 0;
+            jumpingjacks[i] = 0;
+            stayings[0] = 0;
+        }
+    }
+
     private void updateActivityValues() {
         db.collection("dummyData").document(tempDate).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
             public void onSuccess(DocumentSnapshot documentSnapshot) {
-                System.out.println("date "+tempDate);
                 if (documentSnapshot.exists()) {
-                    System.out.println("TEST BEGIN");
                     map = documentSnapshot.getData();
                     activityValues = new float[map.size()];
                     activityValues[0] = (Float.parseFloat((String) map.get("SQUATS")));
                     activityValues[1] = (Float.parseFloat((String) map.get("SITUPS")));
                     activityValues[2] = (Float.parseFloat((String) map.get("JUMPING_JACKS")));
                     activityValues[3] = (Float.parseFloat((String) map.get("PUSHUPS")));
-                    System.out.println(map.get("SQUATS"));
-                    System.out.println("TEST END");
                 } else {
                     System.out.println("NO FILE");
                 }
@@ -351,6 +401,99 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 return true;
             case R.id.reset_menu:
                 //Toast.makeText(this, "Reset connection..", Toast.LENGTH_SHORT).show();
+                return true;
+            case R.id.view_history:
+                List<String> fireStoreDataList = new ArrayList<>();
+                // update collections
+                db.collection("action").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            if (mapOfActivities.size() > 0) {
+                                mapOfActivities.clear();
+                            }
+
+                            List<String> desiredDays = getWeekDates();
+
+                            //Query the database for the current day
+
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                fireStoreDataList.add(document.getId());
+                                System.out.println("document.getId() = " + document.getId());
+                                //get value from each document
+                                if(!document.getData().containsKey("createTime")) continue;
+                                String createTime = convertDate(((Timestamp) document.getData().get("createTime")).toDate());
+
+                                if (!desiredDays.contains(createTime)) {
+                                    // Document is not within a  week of current time
+                                    continue;
+                                }
+                                int count = Integer.parseInt(document.getData().get("counterNum").toString());
+                                int duration = Integer.parseInt(document.getData().get("duration").toString());
+                                String type = document.getData().get("type").toString();
+
+                                System.out.println(createTime + ": " + count + " " + duration + " " + type);
+
+                                if (!mapOfActivities.containsKey(createTime)) {
+                                    ActivityObject temp = new ActivityObject(createTime);
+                                    switch (type) {
+                                        case ("Squats"):
+                                            temp.setSquats(count);
+                                            break;
+                                        case ("SitUps"):
+                                            temp.setSitups(count);
+                                            break;
+                                        case ("PushUps"):
+                                            temp.setPushups(count);
+                                            break;
+                                        case ("Jumping Jacks"):
+                                            temp.setJumpingjacks(count);
+                                            break;
+                                        case ("Staying"):
+                                            temp.setStaying(duration);
+                                            break;
+                                    }
+                                    mapOfActivities.put(createTime, temp);
+                                } else {
+                                    ActivityObject temp = mapOfActivities.get(createTime);
+                                    switch (type) {
+                                        case ("Squats"):
+                                            temp.setSquats(count);
+                                            break;
+                                        case ("SitUps"):
+                                            temp.setSitups(count);
+                                            break;
+                                        case ("PushUps"):
+                                            temp.setPushups(count);
+                                        case ("Jumping Jacks"):
+                                            temp.setJumpingjacks(count);
+                                            break;
+                                        case ("Staying"):
+                                            temp.setStaying(duration);
+                                            break;
+                                    }
+                                }
+                            }
+                            Log.d(TAG, fireStoreDataList.toString());
+                        } else {
+                            Log.d(TAG, "Error getting documents: ", task.getException());
+                        }
+                    }
+                });
+
+                populateValuesFromMap();
+                Intent i = new Intent(getApplicationContext(), VisualizeData.class);
+                if (labels != null) {
+                    i.putExtra("labels", labels);
+                    i.putExtra("squats", squats);
+                    i.putExtra("situps", situps);
+                    i.putExtra("pushups", pushups);
+                    i.putExtra("jumpingjacks", jumpingjacks);
+                    i.putExtra("stayings", stayings);
+                    i.putExtra("values", activityValues);
+                }
+                startActivity(i);
+
                 return true;
 
             default:

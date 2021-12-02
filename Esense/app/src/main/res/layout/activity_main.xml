@@ -19,6 +19,7 @@
             android:background="@drawable/custom_button"
             android:drawableLeft="@drawable/walk"
             android:text="Pushups"
+            android:textColor="@color/colorSecondary"
             android:textAllCaps="false"
             android:textSize="14sp"
             app:layout_constraintStart_toStartOf="parent"
@@ -33,6 +34,7 @@
             android:background="@drawable/custom_button"
             android:drawableLeft="@drawable/walk"
             android:text="Jumps"
+            android:textColor="@color/colorSecondary"
             android:textAllCaps="false"
             android:textSize="14sp"
             app:layout_constraintStart_toStartOf="parent"
@@ -47,6 +49,7 @@
             android:background="@drawable/custom_button"
             android:drawableLeft="@drawable/walk"
             android:text="Situps"
+            android:textColor="@color/colorSecondary"
             android:textAllCaps="false"
             android:textSize="14sp"
             app:layout_constraintStart_toStartOf="parent"
@@ -62,6 +65,7 @@
             android:drawableLeft="@drawable/bluetooth"
             android:drawablePadding="8dp"
             android:text="Connect"
+            android:textColor="@color/colorSecondary"
             android:textAllCaps="false"
             android:textSize="14sp"
             app:layout_constraintStart_toStartOf="parent"
@@ -74,7 +78,7 @@
             android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
             android:text="eSense-device"
-            android:textColor="#000000"
+            android:textColor="@color/colorSecondary"
             android:textSize="14sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
@@ -86,6 +90,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
             android:text="Disconnected"
+            android:textColor="@color/colorPrimary"
             app:layout_constraintBottom_toBottomOf="@+id/connectButton"
             app:layout_constraintEnd_toEndOf="@+id/deviceNameTV"
             app:layout_constraintStart_toStartOf="@+id/deviceNameTV" />
@@ -122,7 +127,7 @@
             android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
             android:text="Activities"
-            android:textColor="#000000"
+            android:textColor="@color/colorSecondary"
             android:textSize="14sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="@+id/headShakeButton"
@@ -139,6 +144,7 @@
             android:drawableLeft="@drawable/speaking"
             android:drawablePadding="8dp"
             android:text="Speaking"
+            android:textColor="@color/colorSecondary"
             android:textAllCaps="false"
             android:textSize="14sp"
             app:layout_constraintStart_toStartOf="parent"
@@ -154,6 +160,7 @@
             android:drawableLeft="@drawable/eat"
             android:drawablePadding="8dp"
             android:text="Eating"
+            android:textColor="@color/colorSecondary"
             android:textAllCaps="false"
             android:textSize="14sp"
             app:layout_constraintStart_toStartOf="parent"
@@ -168,6 +175,7 @@
             android:background="@drawable/custom_button"
             android:drawableLeft="@drawable/nodding"
             android:text="Nodding"
+            android:textColor="@color/colorSecondary"
             android:textAllCaps="false"
             android:textSize="14sp"
             app:layout_constraintStart_toStartOf="parent"
@@ -182,6 +190,7 @@
             android:background="@drawable/custom_button"
             android:drawableLeft="@drawable/headshake"
             android:text="Head Shake"
+            android:textColor="@color/colorSecondary"
             android:textAllCaps="false"
             android:textSize="14sp"
             app:layout_constraintStart_toStartOf="parent"
@@ -196,6 +205,7 @@
             android:background="@drawable/custom_button"
             android:drawableLeft="@drawable/stay"
             android:text="Stay"
+            android:textColor="@color/colorSecondary"
             android:textAllCaps="false"
             android:textSize="14sp"
             app:layout_constraintStart_toStartOf="parent"
@@ -210,6 +220,7 @@
             android:background="@drawable/custom_button"
             android:drawableLeft="@drawable/walk"
             android:text="Speak and Walk"
+            android:textColor="@color/colorSecondary"
             android:textAllCaps="false"
             android:textSize="14sp"
             app:layout_constraintStart_toStartOf="parent"
@@ -224,6 +235,7 @@
             android:background="@drawable/custom_button"
             android:drawableLeft="@drawable/walk"
             android:text="Squats"
+            android:textColor="@color/colorSecondary"
             android:textAllCaps="false"
             android:textSize="14sp"
             app:layout_constraintStart_toStartOf="parent"
@@ -238,6 +250,7 @@
             android:background="@drawable/custom_button"
             android:drawableLeft="@drawable/walk"
             android:text="Walking"
+            android:textColor="@color/colorSecondary"
             android:textAllCaps="false"
             android:textSize="14sp"
             app:layout_constraintStart_toStartOf="parent"
@@ -250,7 +263,7 @@
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"
             android:text="Activity"
-            android:textColor="#4CAF50"
+            android:textColor="@color/colorSecondary"
             android:textSize="15sp"
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="@+id/activitiesTV"
@@ -264,7 +277,7 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="40dp"
             android:layout_marginBottom="16dp"
-            android:textColor="#000000"
+            android:textColor="@color/colorSecondary"
             android:textSize="18sp"
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="@+id/speakingButton"
@@ -278,17 +291,18 @@
             android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
             android:text="Activity History"
-            android:textColor="#000000"
+            android:textColor="@color/colorSecondary"
             android:textSize="14sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.646"
             app:layout_constraintStart_toEndOf="@+id/noddingButton"
             app:layout_constraintTop_toBottomOf="@+id/speakingButton" />
 
         <ListView
             android:id="@+id/activityListView"
-            android:layout_width="250dp"
-            android:layout_height="0dp"
+            android:layout_width="224dp"
+            android:layout_height="232dp"
             android:layout_marginStart="44dp"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"
@@ -330,28 +344,28 @@
             app:layout_constraintStart_toEndOf="@+id/connectButton"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <Spinner
-            android:id="@+id/dropdown"
-            android:layout_width="127dp"
-            android:layout_height="44dp"
-            android:layout_marginEnd="5dp"
+<!--        <Spinner-->
+<!--            android:id="@+id/dropdown"-->
+<!--            android:layout_width="127dp"-->
+<!--            android:layout_height="44dp"-->
+<!--            android:layout_marginEnd="5dp"-->
 
-            app:layout_constraintBottom_toBottomOf="@+id/visualizeButton"
-            app:layout_constraintEnd_toStartOf="@+id/visualizeButton"
-            app:layout_constraintHorizontal_bias="0.108"
-            app:layout_constraintStart_toStartOf="@+id/speak_walk_button"
-            app:layout_constraintTop_toBottomOf="@+id/speak_walk_button"
-            app:layout_constraintVertical_bias="1.0" />
+<!--            app:layout_constraintBottom_toBottomOf="@+id/visualizeButton"-->
+<!--            app:layout_constraintEnd_toStartOf="@+id/visualizeButton"-->
+<!--            app:layout_constraintHorizontal_bias="0.108"-->
+<!--            app:layout_constraintStart_toStartOf="@+id/speak_walk_button"-->
+<!--            app:layout_constraintTop_toBottomOf="@+id/speak_walk_button"-->
+<!--            app:layout_constraintVertical_bias="1.0" />-->
 
-        <Button
-            android:id="@+id/visualizeButton"
-            android:layout_width="214dp"
-            android:layout_height="45dp"
-            android:layout_marginTop="244dp"
-            android:layout_marginEnd="20dp"
-            android:text="Visualize"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/speak_walk_button" />
+<!--        <Button-->
+<!--            android:id="@+id/visualizeButton"-->
+<!--            android:layout_width="214dp"-->
+<!--            android:layout_height="45dp"-->
+<!--            android:layout_marginTop="244dp"-->
+<!--            android:layout_marginEnd="20dp"-->
+<!--            android:text="Visualize"-->
+<!--            app:layout_constraintEnd_toEndOf="parent"-->
+<!--            app:layout_constraintTop_toBottomOf="@+id/speak_walk_button" />-->
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>

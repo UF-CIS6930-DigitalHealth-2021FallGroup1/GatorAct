@@ -22,14 +22,11 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class VisualizeData extends AppCompatActivity {
     private ArrayList barEntries;
-    String tempDate = "2021.11.30";
-
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,72 +36,100 @@ public class VisualizeData extends AppCompatActivity {
         BarChart barChart = findViewById(R.id.BarChart);
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
-            getEntries(extras.getFloatArray("values"));
+            getEntries(extras);
             System.out.println("barEntries.size() = " + barEntries.size());
-            String[] labels = {"SQUATS", "SITUPS", "JUMPING JACKS", "PUSHUPS"};
-            barChart.getXAxis().setValueFormatter(new IndexAxisValueFormatter(labels));
+//            String[] labels = {"SQUATS", "SITUPS", "JUMPING JACKS", "PUSHUPS"};
+//            barChart.getXAxis().setValueFormatter(new IndexAxisValueFormatter(labels));
             Legend legend = barChart.getLegend();
             XAxis xAxis = barChart.getXAxis();
             //change the position of x-axis to the bottom
             xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-
             xAxis.setGranularity(1f);
 
             Description description = new Description();
             description.setEnabled(false);
             barChart.setDescription(description);
+            BarDataSet[] sets = new BarDataSet[7];
+            String[] labels = extras.getStringArray("labels");
+            // firestore DNS issue
+//            float[] squats = extras.getFloatArray("squats");
+//            float[] situps = extras.getFloatArray("situps");
+//            float[] pushups = extras.getFloatArray("pushups");
+//            float[] jacks = extras.getFloatArray("jumpingjacks");
+//            float[] stayings = extras.getFloatArray("stayings");
 
-            BarDataSet barDataSet = new BarDataSet(barEntries, "Activities");
-            BarData barData = new BarData(barDataSet);
+            // hardcode for visualization
+            float[] squats = new float[]{10,15,25,30,25, 40, 25};
+            float[] situps = new float[]{10,25,10,30,25, 10, 25};
+            float[] pushups = new float[]{20,15,20,30,25, 15, 50};
+            float[] jacks = new float[]{40,15,25,30,25, 20, 5};
+            float[] stayings = new float[]{10,15,25,30,25, 30, 15};
+
+
+            for (int i = 0; i < 7; i++) {
+                List<BarEntry> temp = new ArrayList<>();
+                temp.add(new BarEntry(0f+5*i, squats[i]));
+                temp.add(new BarEntry(1f+5*i, situps[i]));
+                temp.add(new BarEntry(2f+5*i, pushups[i]));
+                temp.add(new BarEntry(3f+5*i, jacks[i]));
+                temp.add(new BarEntry(4f+5*i, stayings[i]));
+                sets[i] = new BarDataSet(temp, labels[i]);
+                sets[i].setColors(ColorTemplate.COLORFUL_COLORS);
+            }
+            BarData barData = new BarData(sets[0], sets[1], sets[2], sets[3], sets[4], sets[5], sets[6]);
+
+
+//            List<BarEntry> temp = new ArrayList<BarEntry>();
+//            temp.add(new BarEntry(0f,10));
+//            List<BarEntry> temp1 = new ArrayList<BarEntry>();
+//            temp1.add(new BarEntry(1f,10));
+//            BarDataSet entry1 = new BarDataSet(temp,"first");
+//            entry1.setColor(Color.RED);
+//            BarDataSet entry2 = new BarDataSet(temp1, "second");
+//            entry2.setColor(Color.BLUE);
+//            BarData barData = new BarData(entry1, entry2);
             barChart.setData(barData);
-            barDataSet.setColors(ColorTemplate.JOYFUL_COLORS);
-            barDataSet.setValueTextColor(Color.BLACK);
-            barDataSet.setValueTextSize(10f);
         }
     }
 
+    private BarDataSet[] buildDataSet(Bundle extras) {
+        BarDataSet[] sets = new BarDataSet[extras.getStringArray("labels").length];
+        for(int i = 0; i < 7; i++) {
+            ArrayList<BarEntry> temp = new ArrayList<>();
+            BarDataSet barDataSet;
+            if (i < extras.getFloatArray("squats").length) {
+                temp.add(new BarEntry(i * 1f, extras.getFloatArray("squats")[i]));
+                temp.add(new BarEntry((i + 1) * 1f, extras.getFloatArray("pushups")[i]));
+                temp.add(new BarEntry((i + 2) * 1f, extras.getFloatArray("situps")[i]));
+                temp.add(new BarEntry((i + 3) * 1f, extras.getFloatArray("jumpingjacks")[i]));
+                temp.add(new BarEntry((i + 4) * 1f, extras.getFloatArray("stayings")[i]));
+                barDataSet = new BarDataSet(temp, extras.getStringArray("labels")[i]);
+            }
+            else {
+                temp.add(new BarEntry(i * 1f, 0));
+                temp.add(new BarEntry((i + 1) * 1f, 0));
+                temp.add(new BarEntry((i + 2) * 1f, 0));
+                temp.add(new BarEntry((i + 3) * 1f, 0));
+                temp.add(new BarEntry((i + 4) * 1f, 0));
+                barDataSet = new BarDataSet(temp, "no Data");
+            }
+            sets[i] = barDataSet;
+        }
+        System.out.println("sets.length = " + sets.length);;
+        return sets;
+    }
 
 
-    private void getEntries(float[] date) {
+    private void getEntries(Bundle extras) {
 
-        if (date == null) {
+        if (extras == null) {
             return;
         }
         barEntries = new ArrayList<BarEntry>();
-        barEntries.add(new BarEntry(0, date[0]));
-        barEntries.add(new BarEntry(1f, date[1]));
-        barEntries.add(new BarEntry(2f, date[2]));
-        barEntries.add(new BarEntry(3f, date[3]));
-        // doesn't quite work
+
+        for(int i = 0; i < extras.getFloatArray("squats").length; i++) {
+            barEntries.add(new BarEntry(i*1f, extras.getFloatArray("squats")[i]));
+
+        }
     }
-//        db.collection("dummyData")
-//                .get()
-//                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-//                    @Override
-//                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-//                        if (task.isSuccessful()) {
-//                            for (QueryDocumentSnapshot document : task.getResult()) {
-//                                Log.d(TAG, document.getId() + " => " + document.getData());
-//                                Map<String, Object> dataHash = document.getData();
-//
-//                                int count = 1;
-//                                for (Map.Entry<String, Object> entry : dataHash.entrySet()) {
-//                                    System.out.println(entry.getKey() + " = " + entry.getValue());
-////                                    barEntries.add(new BarEntry(2f * count, count * 3f));
-//                                    count++;
-//                                }
-//                            }
-//                        } else {
-//                            Log.w(TAG, "Error getting documents.", task.getException());
-//                        }
-//                    }
-//                });
-//        Map<String, Integer> display = dummyDatabase.get(selectedDate);
-//        int count = 1;
-//        for (Map.Entry<String, Integer> entry : data.entrySet()) {
-//            barEntries.add(new BarEntry(2f * count, entry.getValue()));
-//            count++;
-//        }
-//        barEntries.add(new BarEntry(0, 10));
-//    }
 }
