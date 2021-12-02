@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Environment;
 import android.util.Log;
 
+import com.sozolab.sumon.counter.utils.ActivitySubscription;
 import com.sozolab.sumon.io.esense.esenselib.ESenseConfig;
 import com.sozolab.sumon.io.esense.esenselib.ESenseEvent;
 import com.sozolab.sumon.io.esense.esenselib.ESenseSensorListener;
@@ -41,8 +42,10 @@ public class SensorListenerManager implements ESenseSensorListener {
     String activityName;
     int activityIndex;
 
-    public SensorListenerManager(Context context){
+    ActivitySubscription activitySubscription;
+    public SensorListenerManager(Context context, ActivitySubscription activitySubscription){
         this.context = context;
+        this.activitySubscription = activitySubscription;
         eSenseConfig = new ESenseConfig();
         rowIndex = 1;
         activityIndex = -1;
@@ -61,50 +64,57 @@ public class SensorListenerManager implements ESenseSensorListener {
      */
     @Override
     public void onSensorChanged(ESenseEvent evt) {
-        //Log.d(TAG, "onSensorChanged()");
-
+        Log.d(TAG, "onSensorChanged()");
+        Log.d(TAG, "Listen for esense event");
         if (dataCollecting){
+            timeStamp = evt.getTimestamp();
+            accel = evt.convertAccToG(eSenseConfig);
+            gyro = evt.convertGyroToDegPerSecond(eSenseConfig);
 
-            if(excelSheet != null){
-                rowIndex++;
+            String eSensorData = "eSense accel x: " + accel[0] + ", y: " + accel[1] + ", z: " + accel[2];
+            Log.d(TAG, eSensorData);
 
-                timeStamp = evt.getTimestamp();
-                accel = evt.convertAccToG(eSenseConfig);
-                gyro = evt.convertGyroToDegPerSecond(eSenseConfig);
-
-                Row dataRow = excelSheet.createRow(rowIndex);
-                Cell dataCell = null;
-                dataCell = dataRow.createCell(0);
-                dataCell.setCellValue(timeStamp);
-
-                dataCell = dataRow.createCell(1);
-                dataCell.setCellValue(accel[0]);
-
-                dataCell = dataRow.createCell(2);
-                dataCell.setCellValue(accel[1]);
-
-                dataCell = dataRow.createCell(3);
-                dataCell.setCellValue(accel[2]);
-
-                dataCell = dataRow.createCell(4);
-                dataCell.setCellValue(gyro[0]);
-
-                dataCell = dataRow.createCell(5);
-                dataCell.setCellValue(gyro[1]);
-
-                dataCell = dataRow.createCell(6);
-                dataCell.setCellValue(gyro[2]);
-
-                dataCell = dataRow.createCell(7);
-                dataCell.setCellValue(String.valueOf(activityIndex));
-
-                dataCell = dataRow.createCell(8);
-                dataCell.setCellValue(activityName);
-
-                String sensorData = "Index : " + activityIndex + " Activity : " + activityName + " Row : " + rowIndex + " Time : " + timeStamp
-                        + " accel : " + accel[0] + " " + accel[1] + " " + accel[2] + " gyro : " + gyro[0] + " " + gyro[1] + " " + gyro[2];
-                Log.d(TAG, sensorData);
-            }
+            activitySubscription.updateEsenseAcc(accel[0], accel[1], accel[2]);
+//            if(excelSheet != null){
+//                rowIndex++;
+//
+//                timeStamp = evt.getTimestamp();
+//                accel = evt.convertAccToG(eSenseConfig);
+//                gyro = evt.convertGyroToDegPerSecond(eSenseConfig);
+//
+//                Row dataRow = excelSheet.createRow(rowIndex);
+//                Cell dataCell = null;
+//                dataCell = dataRow.createCell(0);
+//                dataCell.setCellValue(timeStamp);
+//
+//                dataCell = dataRow.createCell(1);
+//                dataCell.setCellValue(accel[0]);
+//
+//                dataCell = dataRow.createCell(2);
+//                dataCell.setCellValue(accel[1]);
+//
+//                dataCell = dataRow.createCell(3);
+//                dataCell.setCellValue(accel[2]);
+//
+//                dataCell = dataRow.createCell(4);
+//                dataCell.setCellValue(gyro[0]);
+//
+//                dataCell = dataRow.createCell(5);
+//                dataCell.setCellValue(gyro[1]);
+//
+//                dataCell = dataRow.createCell(6);
+//                dataCell.setCellValue(gyro[2]);
+//
+//                dataCell = dataRow.createCell(7);
+//                dataCell.setCellValue(String.valueOf(activityIndex));
+//
+//                dataCell = dataRow.createCell(8);
+//                dataCell.setCellValue(activityName);
+//
+//                String sensorData = "Index : " + activityIndex + " Activity : " + activityName + " Row : " + rowIndex + " Time : " + timeStamp
+//                        + " accel : " + accel[0] + " " + accel[1] + " " + accel[2] + " gyro : " + gyro[0] + " " + gyro[1] + " " + gyro[2];
+//                Log.d(TAG, sensorData);
+//            }
         }
     }
 
@@ -121,7 +131,7 @@ public class SensorListenerManager implements ESenseSensorListener {
     }
 
     public void startDataCollection(String activity) {
-
+        Log.d(TAG, "start esense collection");
         this.activityName = activity;
         activityIndex = getActivityIndex(activityName);
 
@@ -143,26 +153,26 @@ public class SensorListenerManager implements ESenseSensorListener {
 
         rowIndex = 1;
         dataCollecting = false;
-        FileOutputStream accelOutputStream = null;
-
-        try {
-            accelOutputStream = new FileOutputStream(excelFile);
-            excelWorkbook.write(accelOutputStream);
-
-            Log.w(TAG, "Writing excelFile : " + excelFile);
-        } catch (IOException e) {
-            Log.w(TAG, "Error writing : " + excelFile, e);
-        } catch (Exception e) {
-            Log.w(TAG, "Failed to save data file", e);
-        } finally {
-            try {
-                if (null != accelOutputStream){
-                    accelOutputStream.close();
-                }
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-        }
+//        FileOutputStream accelOutputStream = null;
+//
+//        try {
+//            accelOutputStream = new FileOutputStream(excelFile);
+//            excelWorkbook.write(accelOutputStream);
+//
+//            Log.w(TAG, "Writing excelFile : " + excelFile);
+//        } catch (IOException e) {
+//            Log.w(TAG, "Error writing : " + excelFile, e);
+//        } catch (Exception e) {
+//            Log.w(TAG, "Failed to save data file", e);
+//        } finally {
+//            try {
+//                if (null != accelOutputStream){
+//                    accelOutputStream.close();
+//                }
+//            } catch (Exception ex) {
+//                ex.printStackTrace();
+//            }
+//        }
     }
 
     public int getActivityIndex(String activity){
@@ -186,6 +196,9 @@ public class SensorListenerManager implements ESenseSensorListener {
                 break;
             case "Staying":
                 index = 6;
+                break;
+            case "Counter":
+                index = 7;
                 break;
         }
 

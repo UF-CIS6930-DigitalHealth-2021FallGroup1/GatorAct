@@ -55,6 +55,19 @@
         app:layout_constraintStart_toEndOf="@+id/stopTime"
         app:layout_constraintTop_toBottomOf="@+id/listItemActivity" />
 
+    <TextView
+        android:id="@+id/counterNum"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="60dp"
+        android:layout_marginTop="4dp"
+        android:text="#1"
+        android:textColor="#2196F3"
+        app:layout_constraintBottom_toBottomOf="@+id/stopTime"
+        app:layout_constraintStart_toEndOf="@+id/stopTime"
+        app:layout_constraintTop_toBottomOf="@+id/listItemActivity"
+        app:layout_constraintVertical_bias="0.0" />
+
     <ImageView
         android:id="@+id/listItemIcon"
         android:layout_width="wrap_content"
