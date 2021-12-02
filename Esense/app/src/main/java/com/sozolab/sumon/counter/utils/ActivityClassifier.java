@@ -187,7 +187,10 @@ public class ActivityClassifier {
                     break;
                 case "CHEST_UP":
                     compatibleActivities.add("SITUPS");
-                    prepNextCheckpoint(eSenseMovingAverage.getZ() - eSenseMovingAverage.getX() - 0.15);
+//                    prepNextCheckpoint(eSenseMovingAverage.getY() - eSenseMovingAverage.getX() - 0.15);
+//                    prepNextCheckpoint(eSenseMovingAverage.getY());
+//                    prepNextCheckpoint(eSenseMovingAverage);
+                    prepNextCheckpoint();
                     break;
                 default:
                     return;
@@ -201,20 +204,40 @@ public class ActivityClassifier {
                 if(bodyPosture != "CHEST_UP"){
                     compatibleActivities.remove("SITUPS");
                 }else{
-                    double situpDelta = eSenseMovingAverage.getZ() - eSenseMovingAverage.getX() - 0.15;
+                    // double situpDelta = eSenseMovingAverage.getZ() - eSenseMovingAverage.getX() - 0.5;
+//                    double situpDelta = eSenseMovingAverage.getY() - eSenseMovingAverage.getX() - 0.15;
+                    double situpDelta = eSenseMovingAverage.getY();
+                    Log.d(TAG, "eSenseMovingAverage.z: " + eSenseMovingAverage.getZ());
+                    Log.d(TAG, "eSenseMovingAverage.y: " + eSenseMovingAverage.getY());
+                    Log.d(TAG, "eSenseMovingAverage.x: " + eSenseMovingAverage.getX());
+                    Log.d(TAG, "prevDeltaType2: " + prevDeltaType2);
                     if(checkpoints.size() == 1){
-                        if(Math.signum(prevDeltaType2) != Math.signum(situpDelta))
-                            prepNextCheckpoint(situpDelta);
+//                        Log.d(TAG, "SITUPS Start");
+                        prepNextCheckpoint(currentDelta);
+//                        if(Math.signum(prevDeltaType2) != Math.signum(situpDelta))
+//                        if(Math.signum(prevDeltaType1.getY()) != Math.signum(currentDelta.getY()))
+//                            prepNextCheckpoint(currentDelta);
+//                            prepNextCheckpoint(situpDelta);
                     }else if(checkpoints.size() == 2){
-                        if(Math.signum(prevDeltaType2) != Math.signum(situpDelta)){
-                            prepNextCheckpoint(situpDelta);
+//                        Log.d(TAG, "SITUPS 2nd ckpt");
+                        if(Math.signum(prevDeltaType1.getY()) != Math.signum(currentDelta.getY())) {
+//                        if(Math.signum(prevDeltaType2) != Math.signum(situpDelta)){
+//                            Log.d(TAG, "SITUPS submitted");
+//                            submitActivity("SITUPS");
+//                            checkpoints.remove(checkpoints.size()-1);
+//                            prepNextCheckpoint(situpDelta);
+                            prepNextCheckpoint(currentDelta);
                         }
                     }else if(checkpoints.size() == 3){
-                        if(Math.signum(prevDeltaType2) != Math.signum(situpDelta)){
+                        Log.d(TAG, "SITUPS 3rd ckpt");
+                        if(Math.signum(prevDeltaType1.getY()) != Math.signum(currentDelta.getY()) || Math.signum(prevDeltaType1.getX()) != Math.signum(currentDelta.getX())) {
+//                        if(Math.signum(prevDeltaType2) != Math.signum(situpDelta)){
+                            Log.d(TAG, "SITUPS submitted");
                             submitActivity("SITUPS");
                             checkpoints.remove(checkpoints.size()-1);
                             checkpoints.remove(checkpoints.size()-1);
-                            prepNextCheckpoint(situpDelta);
+//                            prepNextCheckpoint(situpDelta);
+                            prepNextCheckpoint(currentDelta);
                         }
                     }
                 }
@@ -234,12 +257,14 @@ public class ActivityClassifier {
                     Log.d(TAG, "currentDelta.y" + currentDelta.getY());
                     Log.d(TAG, "currentDelta.x" + currentDelta.getX());
                     if(Math.signum(prevDeltaType1.getY()) != Math.signum(currentDelta.getY()) && Math.abs(currentDelta.getY() - currentDelta.getX()) / 2 > 0.03) {
+//                    if(Math.signum(prevDeltaType1.getX()) != Math.signum(currentDelta.getX()) && Math.abs(currentDelta.getX()) > 0.09) {
                         prepNextCheckpoint(currentDelta);
                     }
                 }
                 else if(checkpoints.size() == 3){
 //                    Log.d(TAG, "PUSHUPS Third Checkout");
                     if(Math.signum(prevDeltaType1.getY()) != Math.signum(currentDelta.getY()) && Math.abs(currentDelta.getY() - currentDelta.getX()) / 2 > 0.03) {
+//                    if(Math.signum(prevDeltaType1.getX()) != Math.signum(currentDelta.getX()) && Math.abs(currentDelta.getX()) > 0.09) {
                         submitActivity("PUSHUPS");
                         checkpoints.remove(checkpoints.size()-1);
                         checkpoints.remove(checkpoints.size()-1);
@@ -267,28 +292,29 @@ public class ActivityClassifier {
                 }
             }
             if(compatibleActivities.contains("JUMPING_JACKS")){
+                Log.d(TAG, "phoneMovingAverage.z: " + phoneMovingAverage.getZ());
                 if(phoneMovingAverage.getZ() < -0.4){
                     compatibleActivities.remove("JUMPING_JACKS");
                 }else if(checkpoints.size() == 1){
                     prepNextCheckpoint(currentDelta);
                 }else if(checkpoints.size() == 2){
                     if(Math.signum(prevDeltaType1.getX()) != Math.signum(currentDelta.getX())){
-                        if(Math.abs(currentDelta.getX() * (2/3) - (1/3) * currentDelta.getY()) > 0.2)
+                        if(Math.abs(currentDelta.getX() * (2/3) - (1/3) * currentDelta.getY()) > 0.1)
                             prepNextCheckpoint(currentDelta);
                     }   
                 }else if(checkpoints.size() == 3){
                     if(Math.signum(prevDeltaType1.getX()) != Math.signum(currentDelta.getX())){
-                        if(Math.abs(currentDelta.getX() * (2/3) - (1/3) * currentDelta.getY()) > 0.3)
+                        if(Math.abs(currentDelta.getX() * (2/3) - (1/3) * currentDelta.getY()) > 0.15)
                             prepNextCheckpoint(currentDelta);
                     }
                 }else if(checkpoints.size() == 4){
                     if(Math.signum(prevDeltaType1.getX()) != Math.signum(currentDelta.getX())){
-                        if(Math.abs(currentDelta.getX() * (2/3) - (1/3) * currentDelta.getY()) > 0.2)
+                        if(Math.abs(currentDelta.getX() * (2/3) - (1/3) * currentDelta.getY()) > 0.1)
                             prepNextCheckpoint(currentDelta);
                     }
                 }else if(checkpoints.size() == 5) {
                     if(Math.signum(prevDeltaType1.getX()) != Math.signum(currentDelta.getX())){
-                        if(Math.abs(currentDelta.getX() * (2/3) - (1/3) * currentDelta.getY()) > 0.3){
+                        if(Math.abs(currentDelta.getX() * (2/3) - (1/3) * currentDelta.getY()) > 0.15){
                             submitActivity("JUMPING_JACKS");
                             checkpoints.remove(checkpoints.size()-1);
                             checkpoints.remove(checkpoints.size()-1);
