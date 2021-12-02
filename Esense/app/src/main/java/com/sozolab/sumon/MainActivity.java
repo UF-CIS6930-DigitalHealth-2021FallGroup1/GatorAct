@@ -83,7 +83,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button walkButton;
     private Button stayButton;
     private Button speakWalkButton;
-    private Button squadButton;
+    private Button squatsButton;
+    private Button pushupButton;
+    private Button jumpJackButton;
+    private Button sitUpButton;
+
     private static ListView activityListView;
     private Chronometer chronometer;
     private ToggleButton recordButton;
@@ -146,7 +150,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         walkButton = (Button) findViewById(R.id.walkButton);
         stayButton = (Button) findViewById(R.id.stayButton);
         speakWalkButton = (Button) findViewById(R.id.speak_walk_button);
-        squadButton = (Button) findViewById(R.id.squad_button);
+        squatsButton = (Button) findViewById(R.id.squats_button);
 
         recordButton.setOnClickListener(this);
         connectButton.setOnClickListener(this);
@@ -157,7 +161,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         walkButton.setOnClickListener(this);
         stayButton.setOnClickListener(this);
         speakWalkButton.setOnClickListener(this);
-        squadButton.setOnClickListener(this);
+        squatsButton.setOnClickListener(this);
 
         statusImageView = (ImageView) findViewById(R.id.statusImage);
         connectionTextView = (TextView) findViewById(R.id.connectionTV);
@@ -400,8 +404,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 setActivityName();
                 break;
 
-            case R.id.squad_button:
-                activityName = "Squad";
+            case R.id.squats_button:
+                activityName = "Squats";
                 sharedPrefEditor.putString("activityName", activityName);
                 sharedPrefEditor.commit();
                 setActivityName();
