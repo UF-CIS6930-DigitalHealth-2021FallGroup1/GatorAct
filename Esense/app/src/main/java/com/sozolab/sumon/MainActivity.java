@@ -305,16 +305,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public static boolean handleActivity(String activity) {
+        Log.d("handleActivity", "detect Activity - " + activity);
+
         if (activity != null) {
             String activityLow = activity.toLowerCase();
-            Log.d("handleActivity", "detect Activity - " + activityLow + ", chosen activity: " + activityObj.getActivityName().toLowerCase());
+            if(activityObj != null) {
+                Log.d("handleActivity", "chosen activity: " + activityObj.getActivityName().toLowerCase());
+            }
             if(activitySummary.get(activityLow) == null) {
                 activitySummary.put(activityLow, 0);
             }
             if(activity != "NEUTRAL") {
                 int currentCount = activitySummary.get(activityLow) + 1;
                 activitySummary.put(activityLow, currentCount);
-                Log.d("handleActivity", "counterNum: " + activityObj.getCounter() + " on counting activity: " + activityLow);
+                Log.d("handleActivity", "counterNum: " + currentCount+ " on counting activity: " + activityLow);
             }
         };
         return true;
@@ -446,9 +450,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     if (activityName.equals("Activity")) {
                         recordButton.setChecked(false);
                         showAlertMessage();
+                        activitySummary.clear();
+
                     } else {
                         activityObj = new Activity();
-
+                        activitySummary.clear();
                         currentTime = Calendar.getInstance();
                         int hour = currentTime.get(Calendar.HOUR_OF_DAY);
                         int minute = currentTime.get(Calendar.MINUTE);
@@ -501,8 +507,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     if(databaseHandler != null){
                         if(activityObj != null){
                             int totalCount = 0;
-                            if(activitySummary.containsKey(activityObj.getActivityName().toLowerCase())) {
-                                totalCount = activitySummary.get(activityObj.getActivityName().toLowerCase());
+                            String chosenAct = activityObj.getActivityName().toLowerCase();
+                            if(chosenAct.equals("jumping jacks")) {
+                                if (activitySummary.containsKey("squats")) {
+                                    totalCount = activitySummary.get("squats");
+                                }
+                            }
+                            else {
+                                if (activitySummary.containsKey(chosenAct)) {
+                                    totalCount = activitySummary.get(chosenAct);
+                                }
                             }
                             activityObj.setCounter(totalCount);
 
