@@ -55,13 +55,16 @@ import com.google.firebase.firestore.QuerySnapshot;
 import com.sozolab.sumon.io.esense.esenselib.ESenseManager;
 import com.sozolab.sumon.counter.utils.ActivitySubscription;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.TimeZone;
 
 import static android.Manifest.permission.RECORD_AUDIO;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
@@ -136,7 +139,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button walkButton;
     private Button stayButton;
     private Button speakWalkButton;
-    private Button counterButton;
+    private Button squatsButton;
+    private Button pushupsButton;
+    private Button jumpJacksButton;
+    private Button sitUpsButton;
+
     private static ListView activityListView;
     private Chronometer chronometer;
     private ToggleButton recordButton;
@@ -157,8 +164,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private float[] stayings;
     private float[] activityValues;
     private HashMap<String, ActivityObject> mapOfActivities = new HashMap<>();
-
-//    public FirebaseFirestore firestoreDB = FirebasenFirestore.getInstance();
 
     Calendar currentTime;
     ESenseManager eSenseManager;
@@ -181,7 +186,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     // Adding "Counter" activity
     static HashMap<String,Integer> activitySummary;
     private static Context context_;
-    private static Integer counterNum;
 
     public static Context getContext(){
         return context_;
@@ -219,7 +223,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         walkButton = (Button) findViewById(R.id.walkButton);
         stayButton = (Button) findViewById(R.id.stayButton);
         speakWalkButton = (Button) findViewById(R.id.speak_walk_button);
-        counterButton = (Button) findViewById(R.id.counter_button);
+        squatsButton = (Button) findViewById(R.id.squats_button);
+        pushupsButton = (Button) findViewById(R.id.pushups_button);
+        jumpJacksButton = (Button) findViewById(R.id.jumpjacks_button);
+        sitUpsButton = (Button) findViewById(R.id.situps_button);
 
         recordButton.setOnClickListener(this);
         connectButton.setOnClickListener(this);
@@ -230,7 +237,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         walkButton.setOnClickListener(this);
         stayButton.setOnClickListener(this);
         speakWalkButton.setOnClickListener(this);
-        counterButton.setOnClickListener(this);
+        squatsButton.setOnClickListener(this);
+        pushupsButton.setOnClickListener(this);
+        jumpJacksButton.setOnClickListener(this);
+        sitUpsButton.setOnClickListener(this);
 
         statusImageView = (ImageView) findViewById(R.id.statusImage);
         connectionTextView = (TextView) findViewById(R.id.connectionTV);
@@ -493,16 +503,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public static boolean handleActivity(String activity) {
-        Log.d("handleActivity", "Current Activity:" + activity);
+        Log.d("handleActivity", "detect Activity - " + activity);
+
         if (activity != null) {
-            if(activitySummary.get(activity) == null) {
-                activitySummary.put(activity, 0);
+            String activityLow = activity.toLowerCase();
+            if(activityObj != null) {
+                Log.d("handleActivity", "chosen activity: " + activityObj.getActivityName().toLowerCase());
             }
-            if(activity != "NEUTRAL" && activityObj.getActivityName() == "Counter") {
-                int currentCount = activitySummary.get(activity) + 1;
-                activitySummary.put(activity, currentCount);
-                activityObj.setCounter(currentCount);
-                Log.d("handleActivity", "counterNum: " + activityObj.getCounter() + " on counting activity: " + activity);
+            if(activitySummary.get(activityLow) == null) {
+                activitySummary.put(activityLow, 0);
+            }
+            if(activity != "NEUTRAL") {
+                int currentCount = activitySummary.get(activityLow) + 1;
+                activitySummary.put(activityLow, currentCount);
+                Log.d("handleActivity", "counterNum: " + currentCount+ " on counting activity: " + activityLow);
             }
         };
         return true;
@@ -600,8 +614,29 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 setActivityName();
                 break;
 
-            case R.id.counter_button:
-                activityName = "Counter";
+            case R.id.squats_button:
+                activityName = "Squats";
+                sharedPrefEditor.putString("activityName", activityName);
+                sharedPrefEditor.commit();
+                setActivityName();
+                break;
+
+            case R.id.pushups_button:
+                activityName = "PushUps";
+                sharedPrefEditor.putString("activityName", activityName);
+                sharedPrefEditor.commit();
+                setActivityName();
+                break;
+
+            case R.id.jumpjacks_button:
+                activityName = "Jumping Jacks";
+                sharedPrefEditor.putString("activityName", activityName);
+                sharedPrefEditor.commit();
+                setActivityName();
+                break;
+
+            case R.id.situps_button:
+                activityName = "SitUps";
                 sharedPrefEditor.putString("activityName", activityName);
                 sharedPrefEditor.commit();
                 setActivityName();
@@ -613,9 +648,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     if (activityName.equals("Activity")) {
                         recordButton.setChecked(false);
                         showAlertMessage();
+                        activitySummary.clear();
+
                     } else {
                         activityObj = new Activity();
-
+                        activitySummary.clear();
                         currentTime = Calendar.getInstance();
                         int hour = currentTime.get(Calendar.HOUR_OF_DAY);
                         int minute = currentTime.get(Calendar.MINUTE);
@@ -641,12 +678,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
 
                 } else {
-
                     currentTime = Calendar.getInstance();
                     int hour = currentTime.get(Calendar.HOUR_OF_DAY);
                     int minute = currentTime.get(Calendar.MINUTE);
                     int second = currentTime.get(Calendar.SECOND);
-
+                    SimpleDateFormat dateFormatter = new SimpleDateFormat("MM/dd/yyyy");
+                    SimpleDateFormat fireStoreDateFormatter = new SimpleDateFormat("yyyy-MM-dd");
+                    String currentDate = dateFormatter.format(currentTime.getTime());
+                    String datePrefix = fireStoreDateFormatter.format(currentTime.getTime());
                     chronometer.stop();
 
                     if (activityObj != null) {
@@ -665,8 +704,29 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                     if(databaseHandler != null){
                         if(activityObj != null){
-                            databaseHandler.addActivity(activityObj);
+                            int totalCount = 0;
+                            String chosenAct = activityObj.getActivityName().toLowerCase();
+                            if(chosenAct.equals("jumping jacks")) {
+                                if (activitySummary.containsKey("squats")) {
+                                    totalCount = activitySummary.get("squats");
+                                }
+                            }
+                            else {
+                                if (activitySummary.containsKey(chosenAct)) {
+                                    totalCount = activitySummary.get(chosenAct);
+                                }
+                            }
+                            activityObj.setCounter(totalCount);
 
+                            databaseHandler.addActivity(activityObj);
+                            fireStoreHandler.recordActivity(
+                                    activityObj.getActivityName(),
+                                    activityObj.getCounter(),
+                                    currentDate + " " + activityObj.getStartTime(),
+                                    currentDate + " " + activityObj.getStopTime(),
+                                    currentTime,
+                                    datePrefix
+                            );
                             ArrayList<Activity> activityHistory = databaseHandler.getAllActivities();
                             activityListView.setAdapter(new ActivityListAdapter(this, activityHistory));
 
