@@ -280,156 +280,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         });
 
-
-        List<String> list = new ArrayList<>();
-        String[] items = new String[]{"2021.11.29", "2021.11.30"};
-
         // Drop down
-        Spinner dropdown = findViewById(R.id.dropdown);
-//        String[] items = list.toArray(new String[list.size()]);
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, items);
-        dropdown.setAdapter(adapter);
-        dropdown.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                tempDate = dropdown.getSelectedItem().toString();
-                Toast.makeText(MainActivity.this, parent.getSelectedItem().toString(), Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });
-
-        findViewById(R.id.visualizeButton).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-//                Calendar cal = Calendar.getInstance();
-//                String currentDate = "" + cal.get(Calendar.YEAR) + (cal.get(Calendar.MONTH) + 1) + cal.get(Calendar.DATE);
-//                cal.add(Calendar.DATE, -7);
-//                Date cal7 = cal.getTime();
-//                Timestamp test = new Timestamp(cal7);
-//
-//                // Query data base for keys starting with currentDate
-//                System.out.println("BEGINING QUERY");
-//                db.collection("action")
-//                        .whereEqualTo("currentDate", "2021-12-01")
-////                        .whereGreaterThanOrEqualTo("createTime", test)
-////                        .whereGreaterThanOrEqualTo("currentDate", "2021-12-01")
-////                        .whereLessThan("currentDate", "2021-12-02")
-////                        .startAt("currentDate","2021-12-01")
-//                        .get()
-//                        .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-//                            @Override
-//                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-//                                if (task.isSuccessful()) {
-//                                    for (QueryDocumentSnapshot document : task.getResult()) {
-//                                        Log.d(TAG, document.getId() + " => " + document.getData());
-//                                    }
-//                                } else {
-//                                    System.out.println("FAILED");
-//                                    Log.d(TAG, "Error getting documents: ", task.getException());
-//                                }
-//                            }
-//                        });
-//                System.out.println("END CAL");
-
-
-                // update collections
-                db.collection("action").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
-                            if (mapOfActivities.size() > 0) {
-                                mapOfActivities.clear();
-                            }
-
-                            List<String> desiredDays = getWeekDates();
-
-                            //Query the database for the current day
-
-                            for (QueryDocumentSnapshot document : task.getResult()) {
-                                list.add(document.getId());
-                                System.out.println("document.getId() = " + document.getId());
-                                //get value from each document
-                                if(!document.getData().containsKey("createTime")) continue;
-                                String createTime = convertDate(((Timestamp) document.getData().get("createTime")).toDate());
-
-                                if (!desiredDays.contains(createTime)) {
-                                    // Document is not within a  week of current time
-                                    continue;
-                                }
-                                int count = Integer.parseInt(document.getData().get("counterNum").toString());
-                                int duration = Integer.parseInt(document.getData().get("duration").toString());
-                                String type = document.getData().get("type").toString();
-
-                                System.out.println(createTime + ": " + count + " " + duration + " " + type);
-
-                                if (!mapOfActivities.containsKey(createTime)) {
-                                    ActivityObject temp = new ActivityObject(createTime);
-                                    switch (type) {
-                                        case ("Squats"):
-                                            temp.setSquats(count);
-                                            break;
-                                        case ("SitUps"):
-                                            temp.setSitups(count);
-                                            break;
-                                        case ("PushUps"):
-                                            temp.setPushups(count);
-                                            break;
-                                        case ("Jumping Jacks"):
-                                            temp.setJumpingjacks(count);
-                                            break;
-                                        case ("Staying"):
-                                            temp.setStaying(duration);
-                                            break;
-                                    }
-                                    mapOfActivities.put(createTime, temp);
-                                } else {
-                                    ActivityObject temp = mapOfActivities.get(createTime);
-                                    switch (type) {
-                                        case ("Squats"):
-                                            temp.setSquats(count);
-                                            break;
-                                        case ("SitUps"):
-                                            temp.setSitups(count);
-                                            break;
-                                        case ("PushUps"):
-                                            temp.setPushups(count);
-                                        case ("Jumping Jacks"):
-                                            temp.setJumpingjacks(count);
-                                            break;
-                                        case ("Staying"):
-                                            temp.setStaying(duration);
-                                            break;
-                                    }
-                                }
-                            }
-                            Log.d(TAG, list.toString());
-                        } else {
-                            Log.d(TAG, "Error getting documents: ", task.getException());
-                        }
-                    }
-                });
-
-                populateValuesFromMap();
-//                updateActivityValues();
-                Intent i = new Intent(getApplicationContext(), VisualizeData.class);
-                if (labels != null) {
-                    i.putExtra("labels", labels);
-                    i.putExtra("squats", squats);
-                    i.putExtra("situps", situps);
-                    i.putExtra("pushups", pushups);
-                    i.putExtra("jumpingjacks", jumpingjacks);
-                    i.putExtra("stayings", stayings);
-                    i.putExtra("values", activityValues);
-                }
-                startActivity(i);
-            }
-        });
-
-
         audioRecordServiceIntent = new Intent(this, AudioRecordService.class);
 
         // Adding activity counter
@@ -550,6 +401,99 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 return true;
             case R.id.reset_menu:
                 //Toast.makeText(this, "Reset connection..", Toast.LENGTH_SHORT).show();
+                return true;
+            case R.id.view_history:
+                List<String> fireStoreDataList = new ArrayList<>();
+                // update collections
+                db.collection("action").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            if (mapOfActivities.size() > 0) {
+                                mapOfActivities.clear();
+                            }
+
+                            List<String> desiredDays = getWeekDates();
+
+                            //Query the database for the current day
+
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                fireStoreDataList.add(document.getId());
+                                System.out.println("document.getId() = " + document.getId());
+                                //get value from each document
+                                if(!document.getData().containsKey("createTime")) continue;
+                                String createTime = convertDate(((Timestamp) document.getData().get("createTime")).toDate());
+
+                                if (!desiredDays.contains(createTime)) {
+                                    // Document is not within a  week of current time
+                                    continue;
+                                }
+                                int count = Integer.parseInt(document.getData().get("counterNum").toString());
+                                int duration = Integer.parseInt(document.getData().get("duration").toString());
+                                String type = document.getData().get("type").toString();
+
+                                System.out.println(createTime + ": " + count + " " + duration + " " + type);
+
+                                if (!mapOfActivities.containsKey(createTime)) {
+                                    ActivityObject temp = new ActivityObject(createTime);
+                                    switch (type) {
+                                        case ("Squats"):
+                                            temp.setSquats(count);
+                                            break;
+                                        case ("SitUps"):
+                                            temp.setSitups(count);
+                                            break;
+                                        case ("PushUps"):
+                                            temp.setPushups(count);
+                                            break;
+                                        case ("Jumping Jacks"):
+                                            temp.setJumpingjacks(count);
+                                            break;
+                                        case ("Staying"):
+                                            temp.setStaying(duration);
+                                            break;
+                                    }
+                                    mapOfActivities.put(createTime, temp);
+                                } else {
+                                    ActivityObject temp = mapOfActivities.get(createTime);
+                                    switch (type) {
+                                        case ("Squats"):
+                                            temp.setSquats(count);
+                                            break;
+                                        case ("SitUps"):
+                                            temp.setSitups(count);
+                                            break;
+                                        case ("PushUps"):
+                                            temp.setPushups(count);
+                                        case ("Jumping Jacks"):
+                                            temp.setJumpingjacks(count);
+                                            break;
+                                        case ("Staying"):
+                                            temp.setStaying(duration);
+                                            break;
+                                    }
+                                }
+                            }
+                            Log.d(TAG, fireStoreDataList.toString());
+                        } else {
+                            Log.d(TAG, "Error getting documents: ", task.getException());
+                        }
+                    }
+                });
+
+                populateValuesFromMap();
+                Intent i = new Intent(getApplicationContext(), VisualizeData.class);
+                if (labels != null) {
+                    i.putExtra("labels", labels);
+                    i.putExtra("squats", squats);
+                    i.putExtra("situps", situps);
+                    i.putExtra("pushups", pushups);
+                    i.putExtra("jumpingjacks", jumpingjacks);
+                    i.putExtra("stayings", stayings);
+                    i.putExtra("values", activityValues);
+                }
+                startActivity(i);
+
                 return true;
 
             default:

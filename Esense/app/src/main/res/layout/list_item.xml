@@ -13,6 +13,7 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="4dp"
         android:text="07 : 34 : 15"
+        android:textColor="@color/colorPrimary"
         app:layout_constraintStart_toEndOf="@+id/listItemIcon"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -23,6 +24,7 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:text="08 : 15 : 27"
+        android:textColor="@color/colorPrimary"
         app:layout_constraintBottom_toBottomOf="@+id/listItemIcon"
         app:layout_constraintStart_toEndOf="@+id/listItemIcon"
         app:layout_constraintTop_toBottomOf="@+id/startTime" />
@@ -35,7 +37,7 @@
         android:layout_marginTop="4dp"
         android:layout_marginBottom="8dp"
         android:text="Speaking"
-        android:textColor="#000000"
+        android:textColor="@color/colorSecondary"
         android:textSize="14sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="@+id/stopTime"
@@ -50,7 +52,7 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="4dp"
         android:text="11 : 46"
-        android:textColor="#2196F3"
+        android:textColor="@color/colorPrimary"
         app:layout_constraintBottom_toBottomOf="@+id/stopTime"
         app:layout_constraintStart_toEndOf="@+id/stopTime"
         app:layout_constraintTop_toBottomOf="@+id/listItemActivity" />
@@ -62,7 +64,7 @@
         android:layout_marginStart="60dp"
         android:layout_marginTop="4dp"
         android:text="#1"
-        android:textColor="#2196F3"
+        android:textColor="@color/colorPrimary"
         app:layout_constraintBottom_toBottomOf="@+id/stopTime"
         app:layout_constraintStart_toEndOf="@+id/stopTime"
         app:layout_constraintTop_toBottomOf="@+id/listItemActivity"
